@@ -110,13 +110,13 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
 
             ]
          },
-        // {
-        //     section: "User Management",
-        //     items: [
-        //         { name: 'Users', path: '/users', icon: Users, role: 'superadmin' },
-        //         // { name: 'Roles & Permissions', path: '/roles', icon: Lock },
-        //     ]
-        // },
+        {
+            section: "User Management",
+            items: [
+                { name: 'Users', path: '/users', icon: Users, role: 'superadmin' },
+                // { name: 'Roles & Permissions', path: '/roles', icon: Lock },
+            ]
+        },
         // {
         //     section: "Marketing",
         //     items: [
