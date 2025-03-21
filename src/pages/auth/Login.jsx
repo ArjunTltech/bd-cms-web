@@ -74,7 +74,7 @@ function LoginPage() {
                     <h2 className="text-3xl font-extrabold text-gray-200">Welcome back</h2>
                     <p className="mt-2 text-sm text-gray-200">Sign in to your account</p>
                 </div>
-                    <img src="https://www.vsgenxsolutions.com/_next/static/media/logo-1.ded65dd8.png" className='h-14 rounded-sm w-auto' alt="" /></div>
+                    <img src="https://connect.tltechnologies.net/static/media/Logo-TL.68926913554d603aa4fb.png" className='h-14 rounded-sm w-auto' alt="" /></div>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
                     {error && (

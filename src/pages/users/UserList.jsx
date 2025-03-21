@@ -63,7 +63,6 @@ const UserList = () => {
     try {
       setIsLoading(true);
       const response = await axiosInstance.get("users/view-user");
-  console.log(response,"resss");
       // Sort users alphabetically by name (case-insensitive)
       const sortedUsers = response.data.data.sort((a, b) =>
         a.name.toLowerCase().localeCompare(b.name.toLowerCase())
