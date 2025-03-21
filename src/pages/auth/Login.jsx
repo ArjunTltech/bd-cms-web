@@ -52,7 +52,7 @@ function LoginPage() {
 
         try {
             const response = await axiosInstance.post('/auth/login', data);
-            const { token, user } = response.data;
+            const { token, user } = response.data;            
             playNotificationSound()
             login(token, user.role, data.rememberMe);
             navigate('/');

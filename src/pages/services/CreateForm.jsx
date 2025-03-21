@@ -5,11 +5,10 @@ import axiosInstance from "../../config/axios";
 import playNotificationSound from "../../utils/playNotification";
 
 function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen }) {
-  const [title, setTitle] = useState("");
+  const [heading, setHeading] = useState("");
   const [description, setDescription] = useState("");
   const [tagline, setTagline] = useState("");
-  const [taglinedescription, setTaglineDescription] = useState("");
-  const [points, setPoints] = useState([""]);
+  const [subHeading, setSubHeading] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,18 +17,17 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen }) {
 
   useEffect(() => {
     if (mode === "edit" && initialData) {
-      setTitle(initialData.title || "");
-      setDescription(initialData.shortDescription || "");
+      setHeading(initialData.title || "");
+      setSubHeading(initialData.shortDescription || "");
       setTagline(initialData.tagline || "");
-      setTaglineDescription(initialData.taglinedescription || "")
-      setPoints(initialData.points || [""]);
+      setDescription(initialData.description || "")
       setImagePreview(initialData.image || null);
     } else {
-      setTitle("");
+      setHeading("");
       setDescription("");
       setTagline("");
-      setTaglineDescription("")
-      setPoints([""]);
+      setSubHeading("")
+      setHeading("");
       setImageFile(null);
       setImagePreview(null);
     }
@@ -48,10 +46,7 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen }) {
         return value.trim().length >= 10 
           ? null 
           : "Description must be at least 10 characters long";
-      case 'points':
-        return value.every(point => point.trim().length >= 5)
-          ? null
-          : "Each point must be at least 5 characters long";
+    
       case 'image':
         // Skip image validation in edit mode if no new image is provided
         if (mode === 'edit' && (value === undefined || value === null)) {
@@ -64,7 +59,7 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen }) {
         return value.trim().length === 0 || value.trim().length >= 5
           ? null
           : "Tagline must be at least 5 characters long";
-      case 'taglinedescription':
+      case 'description':
         return value.trim().length === 0 || value.trim().length >= 10
           ? null
           : "Tagline description must be at least 10 characters long";
@@ -117,34 +112,8 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen }) {
     
   };
 
-  const handlePointChange = (index, value) => {
-    const newPoints = [...points];
-    newPoints[index] = value;
-    setPoints(newPoints);
-    
-    // Validate points
-    const pointError = validateField('points', newPoints,mode);
-    setErrors(prev => ({
-      ...prev,
-      points: pointError
-    }));
-  };
+ 
 
-  const addPoint = () => setPoints([...points, ""]);
-
-  const removePoint = (index) => {
-    if (points.length > 1) {
-      const newPoints = points.filter((_, i) => i !== index);
-      setPoints(newPoints);
-      
-      // Revalidate points
-      const pointError = validateField('points', newPoints,mode);
-      setErrors(prev => ({
-        ...prev,
-        points: pointError
-      }));
-    }
-  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -153,14 +122,11 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen }) {
     const newErrors = {};
     
     // Validate each field
-    const titleError = validateField('title', title);
-    if (titleError) newErrors.title = titleError;
+    const headingError = validateField('heading', heading);
+    if (headingError) newErrors.headingError = headingError;
 
-    const descriptionError = validateField('description', description,mode);
-    if (descriptionError) newErrors.description = descriptionError;
-
-    const pointsError = validateField('points', points,mode);
-    if (pointsError) newErrors.points = pointsError;
+    const subHeadingError = validateField('subHeading', description,mode);
+    if (subHeadingError) newErrors.subHeadingError = subHeadingError;
 
     const imageError = validateField('image', imageFile,mode);
     if (imageError) newErrors.image = imageError;
@@ -168,8 +134,8 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen }) {
     const taglineError = validateField('tagline', tagline,mode);
     if (taglineError) newErrors.tagline = taglineError;
 
-    const taglineDescriptionError = validateField('taglinedescription', taglinedescription,mode);
-    if (taglineDescriptionError) newErrors.taglinedescription = taglineDescriptionError;
+    const descriptionError = validateField('description', description,mode);
+    if (descriptionError) newErrors.descriptionError = descriptionError;
 
     // If there are any errors, set them and prevent submission
     if (Object.keys(newErrors).length > 0) {
@@ -182,24 +148,27 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen }) {
 
     try {
       setIsSubmitting(true);
-
+      console.log("hello");
+      
       const formData = new FormData();
-      formData.append("title", title);
-      formData.append("shortDescription", description);
+      formData.append("heading", heading);
+      formData.append("description", description);
       formData.append("tagline", tagline);
-      formData.append("taglineDescription", taglinedescription);
-      formData.append("servicePoints", JSON.stringify(points));
+      formData.append("subheading",subHeading);
 
       if (imageFile) {
-        formData.append("image", imageFile);
+        formData.append("image5", imageFile);
       }
-
+      console.log(mode);
+      
       let response;
       if (mode === "add") {
         if(!imagePreview)return
-        response = await axiosInstance.post("/service/create-service", formData, {
+        response = await axiosInstance.post("/slider/add-slider", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
+        console.log(response);
+        
         playNotificationSound()
         toast.success("Service added successfully!");
       } else if (mode === "edit" && initialData) {
@@ -218,11 +187,10 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen }) {
       if (onServiceCreated) onServiceCreated();
 
       // Reset form on success
-      setTitle("");
+      setHeading("");
       setDescription("");
       setTagline("");
-      setTaglineDescription("")
-      setPoints([""]);
+      setSubHeading("")
       setImageFile(null);
       setImagePreview(null);
       setIsDrawerOpen(false);
@@ -239,49 +207,51 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen }) {
       {/* Title */}
       <div>
         <label className="block font-medium">
-          Title <span className="text-error">*</span>
+          Heading <span className="text-error">*</span>
         </label>
         <input
           type="text"
-          placeholder="Service title"
+          placeholder="Slider heading"
           className={`input input-bordered w-full ${errors.title ? 'input-error' : ''}`}
-          value={title}
+          value={heading}
           onChange={(e) => {
-            setTitle(e.target.value);
-            const titleError = validateField('title', e.target.value,mode);
+            setHeading(e.target.value);
+            const headingError = validateField('heading', e.target.value,mode);
             setErrors(prev => ({
               ...prev,
-              title: titleError
+              setHeading: headingError
             }));
           }}
         />
-        {errors.title && <p className="text-error text-sm mt-1">{errors.title}</p>}
+        {errors.heading && <p className="text-error text-sm mt-1">{errors.heading}</p>}
       </div>
 
       {/* Description */}
       <div>
         <label className="block font-medium">
-          Description <span className="text-error">*</span>
+          Subheading 
         </label>
         <textarea
-          className={`textarea textarea-bordered w-full ${errors.description ? 'textarea-error' : ''}`}
-          placeholder="Service description..."
-          value={description}
+          className={`textarea textarea-bordered w-full ${errors.subHeading ? 'textarea-error' : ''}`}
+          placeholder="Slider Subheading..."
+          value={subHeading}
           onChange={(e) => {
-            setDescription(e.target.value);
-            const descriptionError = validateField('description', e.target.value,mode);
+            setSubHeading(e.target.value);
+            const subHeadingError = validateField('subheading', e.target.value,mode);
             setErrors(prev => ({
               ...prev,
-              description: descriptionError
+              subHeading:subHeadingError
             }));
           }}
         ></textarea>
-        {errors.description && <p className="text-error text-sm mt-1">{errors.description}</p>}
+        {errors.subheading && <p className="text-error text-sm mt-1">{errors.subheading}</p>}
       </div>
 
       {/* Tagline */}
       <div>
-        <label className="block font-medium">Tagline</label>
+        <label className="block font-medium">Tagline
+        <span className="text-error">*</span>
+        </label>
         <input
           type="text"
           placeholder="Short tagline..."
@@ -301,55 +271,28 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen }) {
 
       {/* Tagline Description */}
       <div>
-        <label className="block font-medium">Tagline Description</label>
+        <label className="block font-medium">Description
+        <span className="text-error">*</span>
+        </label>
         <textarea
-          placeholder="Tagline description..."
-          className={`textarea textarea-bordered w-full ${errors.taglinedescription ? 'textarea-error' : ''}`}
-          value={taglinedescription}
+          placeholder="description..."
+          className={`textarea textarea-bordered w-full ${errors.content ? 'textarea-error' : ''}`}
+          value={description}
           onChange={(e) => {
-            setTaglineDescription(e.target.value);
-            const taglineDescriptionError = validateField('taglinedescription', e.target.value,mode);
+            setDescription(e.target.value);
+            const descriptionError = validateField('description', e.target.value,mode);
             setErrors(prev => ({
               ...prev,
-              taglinedescription: taglineDescriptionError
+              descriptionError: descriptionError
             }));
           }}
           rows={2}
         ></textarea>
-        {errors.taglinedescription && <p className="text-error text-sm mt-1">{errors.taglinedescription}</p>}
+        {errors.description && <p className="text-error text-sm mt-1">{errors.description}</p>}
       </div>
 
       {/* Bullet Points */}
-      <div>
-        <label className="block font-medium">
-          Bullet Points <span className="text-error">*</span>
-        </label>
-        {points.map((point, index) => (
-          <div key={index} className="flex items-center space-x-2 mb-2">
-            <input
-              type="text"
-              className={`input input-bordered w-full ${errors.points ? 'input-error' : ''}`}
-              placeholder={`Point ${index + 1}`}
-              value={point}
-              onChange={(e) => handlePointChange(index, e.target.value)}
-            />
-            {points.length > 1 && (
-              <button
-                type="button"
-                className="btn btn-error btn-xs"
-                onClick={() => removePoint(index)}
-              >
-                ✕
-              </button>
-            )}
-          </div>
-        ))}
-        {errors.points && <p className="text-error text-sm mt-1">{errors.points}</p>}
-        <button type="button" className="btn btn-primary btn-sm" onClick={addPoint}>
-          + Add Point
-        </button>
-      </div>
-
+      
       {/* Image Upload */}
       <div className="form-control mb-4">
         <label className="label">

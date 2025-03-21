@@ -35,16 +35,16 @@
 //     const fetchData = async () => {
 //       try {
 //         const response = await axiosInstance.get('/company/settings');// Debug log
-    
+
 //         const organizationData = response.data.data;
-      
+
 //         reset({
 //           email: organizationData.email || '',
 //           location: organizationData.location || '',
 //           mapUrl: organizationData.mapUrl || '',
 //           phone: organizationData.phone || ''
 //         });
-        
+
 //         // Set logo preview if exists
 //         if (organizationData.logo) {
 //           setImagePreview(organizationData.logo);
@@ -56,7 +56,7 @@
 //         setIsLoading(false);
 //       }
 //     };
-  
+
 //     fetchData();
 //   }, []); // Keep empty dependency array
 
@@ -84,33 +84,33 @@
 //   const onSubmit = async (formData) => {
 //     setIsLoading(true);
 //     const submitData = new FormData();
-  
+
 //     // Append all form data, including empty/null values
 //     Object.entries(formData).forEach(([key, value]) => {
 //       submitData.append(key, value === undefined ? '' : value); // Append empty string for undefined
 //     });
-  
+
 //     // If there is a logo file, append it
 //     if (logoFile) {
 //       submitData.append('logo', logoFile);
 //     }
-  
+
 //     const toastId = toast.loading('Saving organization details...');
-  
+
 //     try {
 //       const response = await axiosInstance.post('/company/settings', submitData, {
 //         headers: {
 //           'Content-Type': 'multipart/form-data',
 //         },
 //       });
-  
+
 //       toast.update(toastId, {
 //         render: 'Organization details saved successfully',
 //         type: 'success',
 //         isLoading: false,
 //         autoClose: 3000,
 //       });
-  
+
 //       const updatedData = response.data.data;
 //       reset({
 //         email: updatedData.email || '',
@@ -118,7 +118,7 @@
 //         mapUrl: updatedData.mapUrl || '',
 //         phone: updatedData.phone || '',
 //       });
-  
+
 //       if (updatedData.logo) {
 //         setImagePreview(updatedData.logo);
 //       }
@@ -240,7 +240,7 @@
 //               {errors.mapUrl && <span className="text-red-500 text-sm mt-1">{errors.mapUrl.message}</span>}
 //             </div>
 
-            
+
 //           </div>
 //           <div className="flex justify-end mt-6">
 //             <button
@@ -293,7 +293,7 @@ const organizationSchema = yup.object().shape({
 });
 
 const OrganizationDetails = () => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
   const inputRef = useRef(null);
@@ -312,16 +312,17 @@ const OrganizationDetails = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axiosInstance.get('/company/settings');
-    
-        const organizationData = response.data.data;        
-        reset({
-          email: organizationData.email || '',
-          location: organizationData.location || '',
-          mapUrl: organizationData.mapUrl || '',
-          phone: organizationData.phone || ''
-        });
+        const response = await axiosInstance.get('/organization/organization-details');
+        console.log(response.data);
         
+
+        const organizationData = response.data.organization[0];
+        reset({
+          // email: organizationData.email || '',
+          // companyname: organizationData.companyName || '',
+          // phone: organizationData.phoneNumber || '',
+        });
+
         if (organizationData.logo) {
           setImagePreview(organizationData.logo);
         }
@@ -332,9 +333,9 @@ const OrganizationDetails = () => {
         setIsLoading(false);
       }
     };
-  
+
     fetchData();
-  }, []); 
+  }, []);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -358,27 +359,29 @@ const OrganizationDetails = () => {
   };
 
   const onSubmit = async (formData) => {
-    setIsLoading(true);
+    setIsLoading(true);    
     const submitData = new FormData();
-  
+
     // Append all form data, including empty/null values
     Object.entries(formData).forEach(([key, value]) => {
       submitData.append(key, value === undefined ? '' : value);
     });
-  
+
     // If there is a logo file, append it
     if (logoFile) {
       submitData.append('logo', logoFile);
     }
-  
+
     const toastId = toast.loading('Saving organization details...');
-  
+
     try {
-      const response = await axiosInstance.post('/company/settings', submitData, {
+      const response = await axiosInstance.post('/organization/add-organization', submitData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
+      console.log(response.data);
+      
       playNotificationSound()
       toast.update(toastId, {
         render: 'Organization details saved successfully',
@@ -386,15 +389,14 @@ const OrganizationDetails = () => {
         isLoading: false,
         autoClose: 3000,
       });
-  
-      const updatedData = response.data.data;
+
+      const organizationData = response.data.organization[0];
       reset({
-        email: updatedData.email || '',
-        location: updatedData.location || '',
-        mapUrl: updatedData.mapUrl || '',
-        phone: updatedData.phone || '',
+        email: organizationData.email || '',
+        companyname: organizationData.companyName || '',
+        phone: organizationData.phoneNumber || '',
       });
-  
+
       if (updatedData.logo) {
         setImagePreview(updatedData.logo);
       }
@@ -436,22 +438,22 @@ const OrganizationDetails = () => {
   //     {errors[name] && <span className="text-red-500 text-sm mt-1">{errors[name].message}</span>}
   //   </div>
   // );
-  
-  const FormField = ({ 
-    label, 
-    name, 
-    register, 
+
+  const FormField = ({
+    label,
+    name,
+    register,
     control,
-    errors, 
-    type = 'text', 
+    errors,
+    type = 'text',
     placeholder,
     mandatory = false
   }) => {
     // Get the theme from your context
     const { theme } = useTheme();
-    
+
     const isDarkTheme = theme === "dark";
-    
+
     // Custom dropdown styles based on theme
     const dropdownStyles = {
       backgroundColor: isDarkTheme ? '#1a1a1a' : '#fff', // Ensures full dark theme support
@@ -474,18 +476,18 @@ const OrganizationDetails = () => {
     //   color: isDarkTheme ? '#fff' : '#000',
     //   borderColor: isDarkTheme ? '#444' : '#ddd'
     // };
-    
+
     return (
       <div className="form-control mb-4">
-            <style>{dropdownItemStyles}</style>
+        <style>{dropdownItemStyles}</style>
 
         <label className="label">
           <span className="label-text">
-            {label} 
+            {label}
             {mandatory && <span className="text-error ml-1">*</span>}
           </span>
         </label>
-        
+
         {name === "phone" ? (
           <div>
             <Controller
@@ -597,48 +599,48 @@ const OrganizationDetails = () => {
               </div>
             </div>
 
-            <FormField 
-              label="Email" 
-              name="email" 
-              register={register} 
-              errors={errors} 
+            <FormField
+              label="Email"
+              name="email"
+              register={register}
+              errors={errors}
               placeholder="Ex: your@email.com"
               mandatory={true}
             />
 
-            <FormField 
-              label="Phone" 
-              name="phone" 
-              register={register} 
+            <FormField
+              label="Phone"
+              name="phone"
+              register={register}
               control={control}
-              errors={errors} 
+              errors={errors}
               placeholder="Ex: 1234567890"
               mandatory={true}
             />
 
-            <FormField 
-              label="Location" 
-              name="location" 
-              register={register} 
-              errors={errors} 
-              placeholder="Ex: New York, USA"
+            <FormField
+              label="Company Name"
+              name="companyname"
+              register={register}
+              errors={errors}
+              placeholder="Enter Company name"
               mandatory={true}
             />
 
-            <FormField 
-              label="Map URL" 
-              name="mapUrl" 
-              register={register} 
-              errors={errors} 
+            {/* <FormField
+              label="Map URL"
+              name="mapUrl"
+              register={register}
+              errors={errors}
               placeholder="Ex: https://maps.google.com/..."
-            />
+            /> */}
+            
           </div>
           <div className="flex justify-end mt-6">
             <button
               type="submit"
-              className={`btn ${isLoading ? 'btn-disabled' : 'btn-primary'} ${
-                isLoading ? 'loading' : ''
-              }`}
+              className={`btn ${isLoading ? 'btn-disabled' : 'btn-primary'} ${isLoading ? 'loading' : ''
+                }`}
             >
               Save
             </button>

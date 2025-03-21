@@ -68,14 +68,14 @@ function ServiceLayout() {
           <div className="md:flex space-y-2 md:space-y-0 block justify-between items-center mb-8">
             {/* <h1 className="text-3xl font-bold text-neutral-content">Services</h1> */}
             <div className=' space-y-2'>
-       <h1 className="text-3xl font-bold text-neutral-content">Services </h1>
+       <h1 className="text-3xl font-bold text-neutral-content">Slider </h1>
        <p >Total Services : {services.length}</p>
         </div>
             <button
               className="btn btn-primary text-white gap-2"
               onClick={handleAddNewService}
             >
-              + Add new service
+              + Add new slider
             </button>
           </div>
 
