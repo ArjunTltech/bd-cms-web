@@ -1,63 +1,65 @@
 import { useState, useEffect, useCallback } from "react";
 import { Search } from "lucide-react";
 import BlogPostForm from "./CreateForm";
-import BlogCard from "./ServiceCard";
+import BlogCard from "./SliderCard";
 import axiosInstance from "../../config/axios";
-import ServiceCard from "./ServiceCard";
-import ServiceForm from "./CreateForm";
+import SliderForm from "./CreateForm";
+import SliderCard from "./SliderCard";
 
-function ServiceLayout() {
-  const [services, setServices] = useState([]);  
+function SliderLayout() {
+  const [slider, setSlider] = useState([]);  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [editService, setEditService] = useState(null);
+  const [editSlider, setEditSlider] = useState(null);
   const [mode, setMode] = useState("add");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const refreshServiceList = useCallback(async () => {
+  const refreshSliderList = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get("/service/get-all-service");
-      setServices(response.data.data);  
+      const response = await axiosInstance.get("/slider/slider-details");
+      
+      setSlider(response.data.slider);  
     } catch (err) {
-      setError("Failed to load services");
-      console.error("Error fetching services:", err);
+      setError("Failed to load Slider");
+      console.error("Error fetching Slider:", err);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    refreshServiceList();
-  }, [refreshServiceList]);
+    refreshSliderList();
+  }, [refreshSliderList]);
 
-  const handleDeleteService = (serviceId) => {
-    setServices((prevServices) => prevServices.filter((service) => service.id !== serviceId));
+  const handleDeleteSlider = (sliderId) => {
+    setSlider((prevSlider) => prevSlider.filter((slider) => slider.id !== sliderId));
   };
 
-  const handleEditService = (service) => {
-    setEditService(service);
+  const handleEditSlider = (slider) => {
+    setEditSlider(slider);
     setMode("edit");
     setIsDrawerOpen(true);
   };
 
-  const handleAddNewService = () => {
-    setEditService(null);
+  const handleAddNewSlider = () => {
+    setEditSlider(null);
     setMode("add");
     setIsDrawerOpen(true);
   };
-  const filteredServices = services.filter((service) =>
-    service.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    service.shortDescription?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredSlider = slider.filter((slider) =>
+    slider.heading?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  slider.subHeading?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  
 
   return (
     <div className="min-h-screen relative">
       {/* Drawer */}
       <div className="drawer drawer-end">
         <input
-          id="new-service-drawer"
+          id="new-slider-drawer"
           type="checkbox"
           className="drawer-toggle"
           checked={isDrawerOpen}
@@ -69,11 +71,11 @@ function ServiceLayout() {
             {/* <h1 className="text-3xl font-bold text-neutral-content">Services</h1> */}
             <div className=' space-y-2'>
        <h1 className="text-3xl font-bold text-neutral-content">Slider </h1>
-       <p >Total Services : {services.length}</p>
+       <p >Total Slider : {slider.length}</p>
         </div>
             <button
               className="btn btn-primary text-white gap-2"
-              onClick={handleAddNewService}
+              onClick={handleAddNewSlider}
             >
               + Add new slider
             </button>
@@ -85,7 +87,7 @@ function ServiceLayout() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search service..."
+                placeholder="Search slider..."
                 className="input input-bordered w-full focus:outline-none pl-10 bg-base-100 text-neutral-content"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -93,7 +95,7 @@ function ServiceLayout() {
             </div>
           </div>
 
-          {/* Service Grid */}
+          {/* Slider Grid */}
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, index) => (
@@ -119,12 +121,12 @@ function ServiceLayout() {
             <div className="text-center text-red-500">{error}</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredServices.map((service) => (
-                <ServiceCard
-                  key={service.id}
-                  service={service}  
-                  onDelete={handleDeleteService}
-                  onEdit={() => handleEditService(service)}
+              {filteredSlider.map((slider) => (
+                <SliderCard
+                  key={slider.id}
+                  slider={slider}  
+                  onDelete={handleDeleteSlider}
+                  onEdit={() => handleEditSlider(slider)}
                 />
               ))}
             </div>
@@ -136,13 +138,14 @@ function ServiceLayout() {
           <label htmlFor="new-service-drawer" className="drawer-overlay"></label>
           <div className="p-4 md:w-[40%] w-full sm:w-1/2 overflow-y-scroll bg-base-100 h-[85vh] text-base-content absolute bottom-4 right-4 rounded-lg shadow-lg">
             <h2 className="text-lg font-bold mb-4">
-              {editService ? "Edit Service" : "Add New Service"}
+              {editSlider ? "Edit Slider" : "Add New Slider"}
             </h2>
-            <ServiceForm
-              onServiceCreated={refreshServiceList}
-              initialData={editService}
+            <SliderForm
+              onServiceCreated={refreshSliderList}
+              initialData={editSlider}
               mode={mode}
               setIsDrawerOpen={setIsDrawerOpen}
+              sliderCount={slider.length}
             />
           </div>
         </div>
@@ -151,4 +154,4 @@ function ServiceLayout() {
   );
 }
 
-export default ServiceLayout;
+export default SliderLayout;

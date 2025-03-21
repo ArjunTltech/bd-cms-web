@@ -5,19 +5,20 @@ import { toast } from "react-toastify";
 import { format } from "date-fns";
 import DeleteConfirmModal from "../../components/ui/modal/DeleteConfirmModal";
 
-function ServiceCard({ service, onDelete, onEdit }) {
+function SliderCard({ slider, onDelete, onEdit }) {
+  
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDelete = async () => {
     setIsLoading(true);
-    try {
-      await axiosInstance.delete(`/service/delete-service/${service.id}`); // ✅ Correct API endpoint
-      onDelete(service.id);
-      toast.success("Service deleted successfully!");
+    try {      
+     const response = await axiosInstance.delete(`/slider/delete-slider/${slider.id}`); 
+      onDelete(slider.id);
+      toast.success(response.data.message?response.data.message:"slider deleted successfully!");
     } catch (error) {
-      console.error("Error deleting service:", error);
-      toast.error("Failed to delete the service. Please try again.");
+      console.error("Error deleting slider:", error);
+      toast.error(error.response.data.message?error.response.data.message:"Failed to delete the slider. Please try again.");
     } finally {
       setIsLoading(false);
       setShowDeleteModal(false);
@@ -29,24 +30,24 @@ function ServiceCard({ service, onDelete, onEdit }) {
       <div className="card bg-base-200 transition-all duration-300 overflow-hidden group relative">
         <figure className="relative h-48 overflow-hidden">
           <img
-            src={service.image}
-            alt={service.title}
+            src={slider.image}
+            alt={slider.heading}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </figure>
 
         <div className="card-body p-4">
           <h2 className="card-title text-neutral-content text-lg font-bold">
-            {service.title}  {/* Assuming `provider` instead of `author` */}
+            {slider.heading}  {/* Assuming `provider` instead of `author` */}
           </h2>
-          <p className="text-neutral-content text-sm">{service.shortDescription}</p>
+          <p className="text-neutral-content text-sm">{slider.subheading}</p>
           <div className="flex items-center gap-4 mt-2">
             <div className="flex items-center gap-1 text-neutral-content">
-              <span className="text-sm">
+              {/* <span className="text-sm">
                 {service.createdAt
-                  ? format(new Date(service.createdAt), "dd MMM, yyyy")
+                  ? format(new Date(slider.createdAt), "dd MMM, yyyy")
                   : "N/A"}
-              </span>
+              </span> */}
             </div>
           </div>
         </div>
@@ -69,11 +70,11 @@ function ServiceCard({ service, onDelete, onEdit }) {
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
         isLoading={isLoading} 
-        title="Delete Service"
-        message="Are you sure you want to delete this service?"
+        title="Delete Slider"
+        message="Are you sure you want to delete this slider?"
       />
     </>
   );
 }
 
-export default ServiceCard;
+export default SliderCard;

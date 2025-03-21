@@ -76,13 +76,13 @@ const EnquiryItem = ({ enquiry, onStatusChange, onDelete }) => {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await axiosInstance.delete(`/enquiries/delete-enquiry/${enquiry.id}`);
+      await axiosInstance.delete(`/enquiry/delete-enqiuires/${enquiry.id}`);
       onDelete(enquiry.id);
       playNotificationSound()
-      toast.success("Enquiry deleted successfully!");
+      toast.success(response.data.message ? response.data.message : "Enquiry deleted successfully!");
     } catch (error) {
       console.error("Error deleting Enquiry:", error);
-      toast.error("Failed to delete the Enquiry. Please try again.");
+      toast.error(error.response.data.message ? error.response.data.message : "Failed to delete the Enquiry. Please try again.");
     } finally {
       setIsDeleting(false);
       setShowDeleteModal(false);
@@ -189,7 +189,7 @@ const EnquiriesFilter = ({ onFilterChange, onDateRangeChange, filters, isVisible
   };
 
   const handleEndDateChange = (date) => {
-    
+
     setLocalEndDate(date);
     // Only trigger date range change if the date is valid
     if (isValid(date)) {
@@ -207,25 +207,25 @@ const EnquiriesFilter = ({ onFilterChange, onDateRangeChange, filters, isVisible
     if (!localStartDate || !localEndDate) {
       setError("Please select both start and end dates.");
       return;
-    }    
+    }
     if (new Date(localStartDate).getTime() === new Date(localEndDate).getTime()) {
       setError("Start date and end date cannot be the same.");
       return;
     }
-    
+
     const startDateFormatted = localStartDate && isValid(localStartDate)
       ? format(localStartDate, "yyyy-MM-dd")
       : "";
     const endDateFormatted = localEndDate && isValid(localEndDate)
       ? format(localEndDate, "yyyy-MM-dd")
       : "";
-setError("")
+    setError("")
     onDateRangeChange("startDate", startDateFormatted);
     onDateRangeChange("endDate", endDateFormatted);
   };
 
   const handleClearFilter = () => {
-    
+
     setLocalStartDate(null);
     setLocalEndDate(null);
     setStatus("");
@@ -293,8 +293,8 @@ setError("")
             </div>
           </div>
           <p className="text-gray-500 text-sm mt-2">
-  Note: To get data for a day, set the start date to that day and the end date to the next day.
-</p>
+            Note: To get data for a day, set the start date to that day and the end date to the next day.
+          </p>
           {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
 
         </div>
@@ -325,14 +325,14 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   return (
     <div className="min-h-[100px] flex items-center justify-center mt-6 bg-base-200 rounded-lg py-4">
       <div className="join">
-        <button
+        {/* <button
           className="join-item btn btn-sm"
           disabled={currentPage === 1}
           onClick={() => onPageChange(currentPage - 1)}
         >
           «
-        </button>
-
+        </button> */}
+        {/* 
         {getPageNumbers().map((page, index) => (
           <button
             key={index}
@@ -347,15 +347,15 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
           >
             {page}
           </button>
-        ))}
+        ))} */}
 
-        <button
+        {/* <button
           className="join-item btn btn-sm"
           disabled={currentPage === totalPages}
           onClick={() => onPageChange(currentPage + 1)}
         >
           »
-        </button>
+        </button> */}
       </div>
     </div>
   );
@@ -372,11 +372,11 @@ const EnquiriesView = () => {
     page: 1,
     limit: 10
   });
-  const [pagination, setPagination] = useState({
-    total: 0,
-    pages: 1,
-    currentPage: 1
-  });
+  // const [pagination, setPagination] = useState({
+  //   total: 0,
+  //   pages: 1,
+  //   currentPage: 1
+  // });
 
   const fetchEnquiries = async () => {
     setLoading(true);
@@ -398,15 +398,16 @@ const EnquiriesView = () => {
       queryParams.append('page', filters.page.toString());
       queryParams.append('limit', filters.limit.toString());
 
-      const response = await axiosInstance.get(`/enquiries/get-all-enquiries?${queryParams}`);
-const formattedEnquiries = response.data.enquiries.map((enquiry) => ({
-  ...enquiry,
-  phoneNumber: enquiry.phoneNumber.length > 2 
-    ? enquiry.phoneNumber.slice(0, 2) + " " + enquiry.phoneNumber.slice(2) 
-    : enquiry.phoneNumber,
-}));
+      const response = await axiosInstance.get(`/enquiry/get-all-enqiuries`);
 
-setEnquiries(formattedEnquiries);   
+      // const formattedEnquiries = response.data.enquiries.map((enquiry) => ({
+      //   ...enquiry,
+      //   phoneNumber: enquiry.phoneNumber.length > 2 
+      //     ? enquiry.phoneNumber.slice(0, 2) + " " + enquiry.phoneNumber.slice(2) 
+      //     : enquiry.phoneNumber,
+      // }));
+
+      setEnquiries(response.data.enquries);
       setPagination(response.data.pagination);
     } catch (error) {
       console.error("Failed to fetch enquiries", error);
@@ -432,9 +433,9 @@ setEnquiries(formattedEnquiries);
     setEnquiries((prev) => prev.filter((enquiry) => enquiry.id !== id));
 
     // If this was the last item on the page, go back a page
-    if (enquiries.length === 1 && pagination.currentPage > 1) {
-      setFilters(prev => ({ ...prev, page: pagination.currentPage - 1 }));
-    }
+    // if (enquiries.length === 1 && pagination.currentPage > 1) {
+    //   setFilters(prev => ({ ...prev, page: pagination.currentPage - 1 }));
+    // }
   };
 
   const handleFilterChange = (status) => {
@@ -593,13 +594,13 @@ setEnquiries(formattedEnquiries);
           </div>
         )}
 
-        {enquiries.length > 0 && (
+        {/* {enquiries.length > 0 && (
           <Pagination
             currentPage={pagination.currentPage}
             totalPages={pagination.pages}
             onPageChange={handlePageChange}
           />
-        )}
+        )} */}
       </div>
     </div>
   );
