@@ -8,9 +8,11 @@ import {
   Link as LinkIcon,
   CheckCircle,
   XCircle,
+  MapPin,
   Globe,
   Plus
 } from 'lucide-react';
+import { FaPinterest,FaStore,FaGlobeAmericas ,FaWhatsapp,FaInstagram ,FaYoutube ,FaLinkedin ,FaFacebookF   } from "react-icons/fa";
 import axiosInstance from '../../config/axios';
 import { toast } from 'react-toastify';
 import playNotificationSound from '../../utils/playNotification';
@@ -27,11 +29,15 @@ const SocialMediaLayout = () => {
 
   // Platform icons mapping
   const platformIcons = {
-    instagram: <Instagram className="w-6 h-6 text-pink-500" />,
-    facebook: <Facebook className="w-6 h-6 text-blue-600" />,
-    whatsapp: <Share2 className="w-6 h-6 text-green-500" />,
-    youtube: <Youtube className="w-6 h-6 text-red-400" />,
-    linkedin: <Linkedin className="w-6 h-6 text-blue-700" />
+    instagram: <FaInstagram  className="w-6 h-6 text-pink-500" />,
+    facebook: <FaFacebookF  className="w-6 h-6 text-blue-600" />,
+    whatsapp: <FaWhatsapp  className="w-6 h-6 text-green-500" />,
+    youtube: <FaYoutube  className="w-6 h-6 text-red-400" />,
+    linkedin: <FaLinkedin  className="w-6 h-6 text-blue-700" />,
+    map: <MapPin className="w-6 h-6 text-blue-700" />,
+    pinterest: <FaPinterest  className="w-6 h-6 text-[#BD081C]" />,
+    webpage: <FaStore  className="w-6 h-6 text-blue-700" />,
+    website: <FaGlobeAmericas    className="w-6 h-6 " />
   };
 
   // Fetch social links from API
