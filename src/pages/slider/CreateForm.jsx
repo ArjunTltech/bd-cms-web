@@ -4,11 +4,13 @@ import { toast } from "react-toastify";
 import axiosInstance from "../../config/axios";
 import playNotificationSound from "../../utils/playNotification";
 
-function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,sliderCount }) {
+function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen, sliderCount }) {
   const [heading, setHeading] = useState("");
   const [description, setDescription] = useState("");
   const [tagline, setTagline] = useState("");
   const [subHeading, setSubHeading] = useState("");
+  const [category, setCategory] = useState("")
+  const [order,setOrder]=useState("")
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,6 +23,8 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
       setSubHeading(initialData.subheading || "");
       setTagline(initialData.tagline || "");
       setDescription(initialData.description || "")
+      setCategory(initialData.category || "")
+      setOrder(initialData.order||"")
       setImagePreview(initialData.image || null);
     } else {
       setHeading("");
@@ -28,6 +32,8 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
       setTagline("");
       setSubHeading("")
       setHeading("");
+      setCategory("")
+      setOrder("")
       setImageFile(null);
       setImagePreview(null);
     }
@@ -35,41 +41,50 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
     setErrors({});
     setIsSubmitting(false);
   }, [mode, initialData]);
-  const validateField = (name, value, mode) => {    
+  const validateField = (name, value, mode) => {
     switch (name) {
       case 'heading':
-        return value.trim().length >= 3 
-          ? null 
+        return value.trim().length >= 3
+          ? null
           : "Heading is required and must be at least 3 characters long";
-  
+
       case 'subheading':
-        return value.trim().length === 0 || value.trim().length >= 3 
-          ? null 
+        return value.trim().length === 0 || value.trim().length >= 3
+          ? null
           : "Subheading must be at least 3 characters long"; // Not mandatory, but if provided, must be valid
-  
+
       case 'description':
-        return value.trim().length >= 10 
-          ? null 
+        return value.trim().length >= 10
+          ? null
           : "Description is required and must be at least 10 characters long";
-  
+
       case 'tagline':
         return value.trim().length >= 5
           ? null
           : "Tagline is required and must be at least 5 characters long";
-  
+
+      case 'category':
+        return value.trim().length > 0
+          ? null
+          : "Category is required"; // Ensures a category is selected
+      case 'order':
+        return value.trim().length > 0
+          ? null
+          : "Order is required"; // Ensures a category is selected
+
       case 'image':
         if (mode === 'edit' && (value === undefined || value === null)) {
           return null; // Allow existing image in edit mode
         }
-        return value 
-          ? null 
+        return value
+          ? null
           : "Image is required";
-  
+
       default:
         return "This field is required";
     }
   };
-  
+
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -89,7 +104,7 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
 
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
-      
+
       // Clear any previous image errors
       setErrors(prev => {
         const { image, ...rest } = prev;
@@ -105,16 +120,16 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
     setImageFile(null);
     setImagePreview(null);
     if (inputRef.current) inputRef.current.value = "";
-    
+
     // Set image error when removed
     setErrors(prev => ({
       ...prev,
       image: "Image is required"
     }));
-    
+
   };
 
- 
+
 
 
   const handleSubmit = async (event) => {
@@ -122,24 +137,28 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
 
     // Perform validation
     const newErrors = {};
-    
+
     // Validate each field
-    const taglineError = validateField('tagline', tagline,mode);
-    
+    const taglineError = validateField('tagline', tagline, mode);
+
     if (taglineError) newErrors.taglineError = taglineError;
-    const headingError = validateField('heading', heading,mode);
+    const headingError = validateField('heading', heading, mode);
     if (headingError) newErrors.headingError = headingError;
 
-    const subHeadingError = validateField('subheading', description,mode);
+    const subHeadingError = validateField('subheading', description, mode);
     if (subHeadingError) newErrors.subHeadingError = subHeadingError;
 
-    const imageError = validateField('image', imageFile,mode);
+    const imageError = validateField('image', imageFile, mode);
     if (imageError) newErrors.image = imageError;
 
 
-    const descriptionError = validateField('description', description,mode);
+    const descriptionError = validateField('description', description, mode);
     if (descriptionError) newErrors.descriptionError = descriptionError;
-    
+    const categoryError = validateField('category', category, mode);
+    if (categoryError) newErrors.categoryError = categoryError;
+    const orderError = validateField('order', order, mode);
+    if (orderError) newErrors.orderError = orderError;
+
     // If there are any errors, set them and prevent submission
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -150,32 +169,34 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
     if (isSubmitting) return;
 
     try {
-      setIsSubmitting(true);      
+      setIsSubmitting(true);
       const formData = new FormData();
-      formData.append("heading",heading);
+      formData.append("heading", heading);
       formData.append("description", description);
       formData.append("tagline", tagline);
-      formData.append("subheading",subHeading);
+      formData.append("subheading", subHeading);
+      formData.append("category", category);
+      formData.append("order", order);
 
       if (imageFile) {
         formData.append("image", imageFile);
       }
-      
+
       let response;
       if (mode === "add") {
-       if(sliderCount<8){
-        if(!imagePreview)return
-        response = await axiosInstance.post("/slider/add-slider", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        
-        playNotificationSound()
-        toast.success(response.data.message?response.data.message:"Slider added successfully!");
-       }else{
-        toast.error("You can add up to 8 sliders only.");
-      }
+        if (sliderCount < 8) {
+          if (!imagePreview) return
+          response = await axiosInstance.post("/slider/add-slider", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+
+          playNotificationSound()
+          toast.success(response.data.message ? response.data.message : "Slider added successfully!");
+        } else {
+          toast.error("You can add up to 8 sliders only.");
+        }
       } else if (mode === "edit" && initialData) {
-        if(!imagePreview)return
+        if (!imagePreview) return
 
         response = await axiosInstance.put(
           `/slider/update-slider/${initialData.id}`,
@@ -184,7 +205,7 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
             headers: { "Content-Type": "multipart/form-data" },
           }
         );
-        toast.success(response.data.message?response.data.message:"Slider updated successfully!");
+        toast.success(response.data.message ? response.data.message : "Slider updated successfully!");
       }
 
       if (onServiceCreated) onServiceCreated();
@@ -199,7 +220,7 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
       setIsDrawerOpen(false);
     } catch (error) {
       console.error("Error handling service:", error);
-      toast.error(error.response.data.message?error.response.data.message:"Failed to save service. Please try again.");
+      toast.error(error.response.data.message ? error.response.data.message : "Failed to save service. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -219,7 +240,7 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
           value={heading}
           onChange={(e) => {
             setHeading(e.target.value);
-            const headingError = validateField('heading', e.target.value,mode);
+            const headingError = validateField('heading', e.target.value, mode);
             setErrors(prev => ({
               ...prev,
               headingError: headingError
@@ -232,7 +253,7 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
       {/* Description */}
       <div>
         <label className="block font-medium">
-          Subheading 
+          Subheading
         </label>
         <textarea
           className={`textarea textarea-bordered w-full ${errors.subHeadingError ? 'textarea-error' : ''}`}
@@ -240,10 +261,10 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
           value={subHeading}
           onChange={(e) => {
             setSubHeading(e.target.value);
-            const subHeadingError = validateField('subheading', e.target.value,mode);
+            const subHeadingError = validateField('subheading', e.target.value, mode);
             setErrors(prev => ({
               ...prev,
-              subHeadingError:subHeadingError
+              subHeadingError: subHeadingError
             }));
           }}
         ></textarea>
@@ -253,7 +274,7 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
       {/* Tagline */}
       <div>
         <label className="block font-medium">Tagline
-        <span className="text-error">*</span>
+          <span className="text-error">*</span>
         </label>
         <input
           type="text"
@@ -262,7 +283,7 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
           value={tagline}
           onChange={(e) => {
             setTagline(e.target.value);
-            const taglineError = validateField('tagline', e.target.value,mode);
+            const taglineError = validateField('tagline', e.target.value, mode);
             setErrors(prev => ({
               ...prev,
               taglineError: taglineError
@@ -275,7 +296,7 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
       {/* Tagline Description */}
       <div>
         <label className="block font-medium">Description
-        <span className="text-error">*</span>
+          <span className="text-error">*</span>
         </label>
         <textarea
           placeholder="description..."
@@ -283,7 +304,7 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
           value={description}
           onChange={(e) => {
             setDescription(e.target.value);
-            const descriptionError = validateField('description', e.target.value,mode);
+            const descriptionError = validateField('description', e.target.value, mode);
             setErrors(prev => ({
               ...prev,
               descriptionError: descriptionError
@@ -293,9 +314,58 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
         ></textarea>
         {errors.descriptionError && <p className="text-error text-sm mt-1">{errors.descriptionError}</p>}
       </div>
+      <div>
+        <label className="block font-medium">
+          Category <span className="text-error">*</span>
+        </label>
+        <select
+          className={`select select-bordered w-full ${errors.categoryError ? 'select-error' : ''}`}
+          value={category}
+          onChange={(e) => {
+            setCategory(e.target.value);
+            const categoryError = validateField('category', e.target.value, mode);
+            setErrors((prev) => ({
+              ...prev,
+              categoryError: categoryError,
+            }));
+          }}
+        >
+          <option value="">Select a category</option>
+          <option value="Product">Product</option>
+          <option value="Service">Service</option>
+        </select>
+        {errors.categoryError && <p className="text-error text-sm mt-1">{errors.categoryError}</p>}
+      </div>
+      <div>
+  <label className="block font-medium">
+    Order <span className="text-error">*</span>
+  </label>
+  <select
+    className={`select select-bordered w-full ${errors.orderError ? 'select-error' : ''}`}
+    value={order} // Ensure this is set correctly
+    onChange={(e) => {
+      setOrder(e.target.value);
+      const orderError = validateField('order', e.target.value, mode);
+      setErrors((prev) => ({
+        ...prev,
+        orderError: orderError,
+      }));
+    }}
+  >
+    <option value="">Select Order</option>
+    {[...Array(8)].map((_, index) => (
+      <option key={index + 1} value={index + 1}>
+        {index + 1}
+      </option>
+    ))}
+  </select>
+  {errors.orderError && <p className="text-error text-sm mt-1">{errors.orderError}</p>}
+</div>
+
+
 
       {/* Bullet Points */}
-      
+
       {/* Image Upload */}
       <div className="form-control mb-4">
         <label className="label">
@@ -334,29 +404,30 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen,slid
 
       {/* Submit Button */}
       <div className="flex flex-col sm:flex-row gap-2">
-  <button 
-    type="submit" 
-    className="btn btn-primary w-full sm:w-1/2"
-    disabled={isSubmitting}
-  >
-    {isSubmitting ? (
-      <>
-        <span className="loading loading-spinner"></span>
-        {mode === "add" ? "Adding Slider..." : "Updating Slider..."}
-      </>
-    ) : (
-      mode === "add" ? "Add Slider" : "Update Slider"
-    )}
-  </button>
-  <button 
-    type="button" 
-    className="btn btn-outline w-full sm:w-1/2 border border-gray-400  "
-   onClick={()=>{setIsDrawerOpen(false),setErrors({}),setIsSubmitting(false),setImagePreview(null)      
-  }}
-   >
-    Cancel
-  </button>
-</div>
+        <button
+          type="submit"
+          className="btn btn-primary w-full sm:w-1/2"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <span className="loading loading-spinner"></span>
+              {mode === "add" ? "Adding Slider..." : "Updating Slider..."}
+            </>
+          ) : (
+            mode === "add" ? "Add Slider" : "Update Slider"
+          )}
+        </button>
+        <button
+          type="button"
+          className="btn btn-outline w-full sm:w-1/2 border border-gray-400  "
+          onClick={() => {
+            setIsDrawerOpen(false), setErrors({}), setIsSubmitting(false), setImagePreview(null)
+          }}
+        >
+          Cancel
+        </button>
+      </div>
 
     </form>
   );

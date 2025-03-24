@@ -85,14 +85,14 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
     }, []);
 
     const navigation = [
-        // {
-        //     section: "Dashboard",
-        //     items: [
-        //         { name: 'Dashboard', path: '/', icon: Home },
-        //         { name: 'Analytics', path: '/analytics', icon: BarChart2 },
-        //         { name: 'Enquiries', path: '/enquiries', icon: FileText, count: count.enquiries },
-        //     ]
-        // },
+        {
+            section: "Dashboard",
+            items: [
+                // { name: 'Dashboard', path: '/', icon: Home },
+                // { name: 'Analytics', path: '/analytics', icon: BarChart2 },
+                // { name: 'Enquiries', path: '/enquiries', icon: FileText, count: count.enquiries },
+            ]
+        },
         {
             section: "Content Management",
             items: [

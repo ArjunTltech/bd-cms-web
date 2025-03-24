@@ -280,13 +280,9 @@ const organizationSchema = yup.object().shape({
     .required('Email is required')
     .email('Enter a valid email address')
     .max(100, 'Email must be at most 100 characters'),
-  location: yup.string()
-    .required('Location is required')
-    .max(200, 'Location must be at most 200 characters'),
-  mapUrl: yup.string()
-    .url('Enter a valid URL')
-    .max(500, 'Map URL must be at most 500 characters')
-    .nullable(),
+    companyname: yup.string()
+    .required('Companyname is required')
+    .max(200, 'Companyname must be at most 200 characters'),
   phone: yup.string()
     .required('Phone number is required')
     .matches(/^\+?[0-9]{10,14}$/, 'Phone number must be 10-14 digits')
@@ -313,14 +309,13 @@ const OrganizationDetails = () => {
     const fetchData = async () => {
       try {
         const response = await axiosInstance.get('/organization/organization-details');
-        console.log(response.data);
         
 
         const organizationData = response.data.organization[0];
         reset({
-          // email: organizationData.email || '',
-          // companyname: organizationData.companyName || '',
-          // phone: organizationData.phoneNumber || '',
+          email: organizationData.email || '',
+          companyname: organizationData.companyName || '',
+          phone: organizationData.phoneNumber || '',
         });
 
         if (organizationData.logo) {
@@ -369,7 +364,7 @@ const OrganizationDetails = () => {
 
     // If there is a logo file, append it
     if (logoFile) {
-      submitData.append('logo', logoFile);
+      submitData.append('image', logoFile);
     }
 
     const toastId = toast.loading('Saving organization details...');
@@ -384,7 +379,7 @@ const OrganizationDetails = () => {
       
       playNotificationSound()
       toast.update(toastId, {
-        render: 'Organization details saved successfully',
+        render: response.data.message||'Organization details saved successfully',
         type: 'success',
         isLoading: false,
         autoClose: 3000,
