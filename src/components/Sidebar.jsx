@@ -98,14 +98,14 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
             items: [
                 { name: 'Pages', path: '/pages', icon: Layout },
                 // { name: 'Blog Posts', path: '/posts', icon: PenTool, count: count.blogs },
-                // { name: 'Clients', path: '/clients', icon: Briefcase, count: count.clients },
+                { name: 'Clients', path: '/clients', icon: Briefcase, count: count.clients },
                 // { name: 'Documents', path: '/documents', icon: FileText },
                 // { name: 'SEO Editor', path: '/seo-editor', icon: Layers },
                 // { name: 'Team Members', path: '/team', icon: Users, count: count.team },
                 // { name: 'FAQs', path: '/faqs', icon: FileText, },
                 // { name: 'Background Image', path: '/services', icon: BriefcaseBusiness, count: count.services },
                 { name: 'Slider', path: '/services', icon: SlidersHorizontal, count: count.services },
-                // { name: 'Organization Details', path: '/organization-details', icon: Info, },
+                { name: 'Organization Details', path: '/organization-details', icon: Info, },
                    { name: 'Social Media', path: '/social', icon: Globe, count: count.socialMedia },
 
             ]
@@ -123,7 +123,6 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
         //         { name: 'Newsletters', path: '/newsletters', icon: Mail, count: count.newsletters },
         //         // { name: 'Comments', path: '/comments', icon: MessageSquare, count: count.comments },
         //         { name: 'Testimonials', path: '/testimonials', icon: MessageSquare, count: count.testimonials },
-        //         { name: 'Social Media', path: '/social', icon: Globe, count: count.socialMedia },
         //     ]
         // },
         {

@@ -10,9 +10,10 @@ import {
   XCircle,
   MapPin,
   Globe,
-  Plus
+  Plus,
+  Loader
 } from 'lucide-react';
-import { FaPinterest,FaStore,FaGlobeAmericas ,FaWhatsapp,FaInstagram ,FaYoutube ,FaLinkedin ,FaFacebookF   } from "react-icons/fa";
+import { FaPinterest, FaStore, FaGlobeAmericas, FaWhatsapp, FaInstagram, FaYoutube, FaLinkedin, FaFacebookF } from "react-icons/fa";
 import axiosInstance from '../../config/axios';
 import { toast } from 'react-toastify';
 import playNotificationSound from '../../utils/playNotification';
@@ -26,18 +27,26 @@ const SocialMediaLayout = () => {
   const [editing, setEditing] = useState(null);
   const [newLink, setNewLink] = useState("");
   const [showAddLinkModal, setShowAddLinkModal] = useState(false);
+  // Confirmation modals
+  const [showStatusConfirmation, setShowStatusConfirmation] = useState(false);
+  const [showActivationConfirmation, setShowActivationConfirmation] = useState(false);
+  const [platformToToggle, setPlatformToToggle] = useState(null);
+  // Loading states for actions
+  const [isDeactivating, setIsDeactivating] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Platform icons mapping
   const platformIcons = {
-    instagram: <FaInstagram  className="w-6 h-6 text-pink-500" />,
-    facebook: <FaFacebookF  className="w-6 h-6 text-blue-600" />,
-    whatsapp: <FaWhatsapp  className="w-6 h-6 text-green-500" />,
-    youtube: <FaYoutube  className="w-6 h-6 text-red-400" />,
-    linkedin: <FaLinkedin  className="w-6 h-6 text-blue-700" />,
+    instagram: <FaInstagram className="w-6 h-6 text-pink-500" />,
+    facebook: <FaFacebookF className="w-6 h-6 text-blue-600" />,
+    whatsapp: <FaWhatsapp className="w-6 h-6 text-green-500" />,
+    youtube: <FaYoutube className="w-6 h-6 text-red-400" />,
+    linkedin: <FaLinkedin className="w-6 h-6 text-blue-700" />,
     map: <MapPin className="w-6 h-6 text-blue-700" />,
-    pinterest: <FaPinterest  className="w-6 h-6 text-[#BD081C]" />,
-    webpage: <FaStore  className="w-6 h-6 text-blue-700" />,
-    website: <FaGlobeAmericas    className="w-6 h-6 " />
+    pinterest: <FaPinterest className="w-6 h-6 text-[#BD081C]" />,
+    google_business: <FaStore className="w-6 h-6 text-blue-700" />,
+    website: <FaGlobeAmericas className="w-6 h-6" />
   };
 
   // Fetch social links from API
@@ -47,9 +56,12 @@ const SocialMediaLayout = () => {
         setLoading(true);
         const response = await axiosInstance.get("/social/get-social");
 
-        const links = response.data.data.reduce((acc, link) => {
+        const activeLinks = {};
+        const inactiveLinks = {};
+
+        response.data.data.forEach(link => {
           const platform = link.platform.toLowerCase();
-          acc[platform] = {
+          const linkData = {
             id: link.id,
             url: link.url,
             name: link.platform,
@@ -57,10 +69,17 @@ const SocialMediaLayout = () => {
             active: link.isActive,
             lastChecked: new Date(link.updatedAt).toISOString().split('T')[0]
           };
-          return acc;
-        }, {});
+          
+          // Sort links into active (displayed) and inactive (available)
+          if (link.isActive) {
+            activeLinks[platform] = linkData;
+          } else {
+            inactiveLinks[platform] = linkData;
+          }
+        });
 
-        setDisplayedLinks(links);
+        setDisplayedLinks(activeLinks);
+        setAvailableLinks(inactiveLinks);
         setError(null);
       } catch (err) {
         setError("Failed to load social media links");
@@ -85,6 +104,7 @@ const SocialMediaLayout = () => {
     }
 
     try {
+      setIsSaving(true);
       // Get the current social media entry being edited
       const currentEntry = displayedLinks[editing];
       
@@ -108,8 +128,7 @@ const SocialMediaLayout = () => {
             lastChecked: new Date().toISOString().split('T')[0]
           }
         }));
-        setEditing(null);
-        playNotificationSound()
+        playNotificationSound();
         toast.success("Social media link updated successfully!");
       } else {
         throw new Error(response.data.message || "Failed to update");
@@ -117,6 +136,9 @@ const SocialMediaLayout = () => {
     } catch (error) {
       console.error("Error updating social media link:", error);
       toast.error("Failed to update social media link. Please try again.");
+    } finally {
+      setIsSaving(false);
+      setEditing(null);
     }
   };
 
@@ -129,22 +151,126 @@ const SocialMediaLayout = () => {
     }
   };
 
+  // Show confirmation for setting to inactive
   const handleToggleStatus = (platform) => {
-    const isDisplayed = displayedLinks[platform];
+    setPlatformToToggle(platform);
+    setShowStatusConfirmation(true);
+  };
+
+  // Handle status toggling after confirmation (setting to inactive)
+  const confirmToggleStatus = async () => {
+    if (!platformToToggle) return;
     
-    if (isDisplayed) {
-      // If the link is currently displayed
-      setDisplayedLinks((prev) => {
-        const newDisplayed = { ...prev };
-        delete newDisplayed[platform];
-        return newDisplayed;
-      });
+    try {
+      setIsDeactivating(true);
+      const platform = platformToToggle;
+      const currentLink = displayedLinks[platform];
       
-      // Add back to available links
-      setAvailableLinks((prev) => ({
-        ...prev,
-        [platform]: displayedLinks[platform]
-      }));
+      // Make API call to update status
+      const response = await axiosInstance.put(
+        `/social/update-social/${currentLink.id}`,
+        {
+          platform: currentLink.name,
+          url: currentLink.url,
+          isActive: false // Set to inactive
+        }
+      );
+
+      if (response.data.success) {
+        // Move from displayed links to available links
+        const updatedLink = {
+          ...currentLink,
+          active: false,
+          lastChecked: new Date().toISOString().split('T')[0]
+        };
+        
+        setAvailableLinks(prev => ({
+          ...prev,
+          [platform]: updatedLink
+        }));
+        
+        // Remove from displayed links
+        setDisplayedLinks(prev => {
+          const updated = {...prev};
+          delete updated[platform];
+          return updated;
+        });
+        
+        playNotificationSound();
+        toast.success("Social media set to inactive!");
+      } else {
+        throw new Error(response.data.message || "Failed to update status");
+      }
+    } catch (error) {
+      console.error("Error updating social media status:", error);
+      toast.error("Failed to update social media status. Please try again.");
+    } finally {
+      // Close confirmation modal and reset states
+      setIsDeactivating(false);
+      setShowStatusConfirmation(false);
+      setPlatformToToggle(null);
+    }
+  };
+
+  // New function to handle activation of inactive social media
+  const handleActivateSocial = (platform) => {
+    setPlatformToToggle(platform);
+    setShowActivationConfirmation(true);
+    setShowAddLinkModal(false);
+  };
+
+  // Confirm activation of social media
+  const confirmActivation = async () => {
+    if (!platformToToggle) return;
+    
+    try {
+      setIsActivating(true);
+      const platform = platformToToggle;
+      const currentLink = availableLinks[platform];
+      
+      // Make API call to update status to active
+      const response = await axiosInstance.put(
+        `/social/update-social/${currentLink.id}`,
+        {
+          platform: currentLink.name,
+          url: currentLink.url,
+          isActive: true // Set to active
+        }
+      );
+
+      if (response.data.success) {
+        // Move from available links to displayed links
+        const updatedLink = {
+          ...currentLink,
+          active: true,
+          lastChecked: new Date().toISOString().split('T')[0]
+        };
+        
+        setDisplayedLinks(prev => ({
+          ...prev,
+          [platform]: updatedLink
+        }));
+        
+        // Remove from available links
+        setAvailableLinks(prev => {
+          const updated = {...prev};
+          delete updated[platform];
+          return updated;
+        });
+        
+        playNotificationSound();
+        toast.success("Social media activated successfully!");
+      } else {
+        throw new Error(response.data.message || "Failed to activate");
+      }
+    } catch (error) {
+      console.error("Error activating social media:", error);
+      toast.error("Failed to activate social media. Please try again.");
+    } finally {
+      // Close confirmation modal and reset states
+      setIsActivating(false);
+      setShowActivationConfirmation(false);
+      setPlatformToToggle(null);
     }
   };
 
@@ -155,23 +281,6 @@ const SocialMediaLayout = () => {
     } catch (err) {
       toast.error("Failed to copy link");
     }
-  };
-
-  const handleAddLink = (platform) => {
-    // Move the selected platform from available to displayed links
-    setDisplayedLinks((prev) => ({
-      ...prev,
-      [platform]: availableLinks[platform]
-    }));
-
-    // Remove the platform from available links
-    setAvailableLinks((prev) => {
-      const newAvailable = { ...prev };
-      delete newAvailable[platform];
-      return newAvailable;
-    });
-
-    setShowAddLinkModal(false);
   };
 
   if (loading) {
@@ -227,116 +336,135 @@ const SocialMediaLayout = () => {
         <div className="overflow-x-auto -mx-4 sm:mx-0">
           <div className="min-w-full align-middle">
             <div className="overflow-hidden">
-              <table className="min-w-full divide-y divide-base-300">
-                <thead>
-                  <tr className="text-xs sm:text-sm text-neutral-content">
-                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-left">Platform</th>
-                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-left">URL</th>
-                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-center">Status</th>
-                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-base-300">
-                  {Object.entries(displayedLinks).map(([platform, details]) => (
-                    <tr key={platform} className="hover:bg-base-300/10">
-                      <td className="px-2 py-2 sm:px-4 sm:py-3 text-neutral-content whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <div className="avatar placeholder">
-                            <div className="bg-base-200 rounded-lg w-8 h-8">
-                              <div className="flex items-center justify-center">
-                                {platformIcons[platform]}
+              {Object.keys(displayedLinks).length > 0 ? (
+                <table className="min-w-full divide-y divide-base-300">
+                  <thead>
+                    <tr className="text-xs sm:text-sm text-neutral-content">
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-left">Platform</th>
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-left">URL</th>
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-center">Status</th>
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-base-300">
+                    {Object.entries(displayedLinks).map(([platform, details]) => (
+                      <tr key={platform} className="hover:bg-base-300/10">
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-neutral-content whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <div className="avatar placeholder">
+                              <div className="bg-base-200 rounded-lg w-8 h-8">
+                                <div className="flex items-center justify-center">
+                                  {platformIcons[platform]}
+                                </div>
                               </div>
                             </div>
+                            <div className="hidden sm:block">
+                              <div className="font-medium text-sm">{details.name}</div>
+                              <div className="text-xs opacity-70">{details.region}</div>
+                            </div>
                           </div>
-                          <div className="hidden sm:block">
-                            <div className="font-medium text-sm">{details.name}</div>
-                            <div className="text-xs opacity-70">{details.region}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-2 py-2 sm:px-4 sm:py-3">
-                        {editing === platform ? (
-                          <input
-                            type="text"
-                            value={newLink}
-                            onChange={(e) => setNewLink(e.target.value)}
-                            className="input input-bordered input-sm w-full max-w-[120px] sm:max-w-xs"
-                          />
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <span className="truncate text-xs sm:text-sm max-w-[100px] sm:max-w-xs font-mono">
-                              {details.url}
-                            </span>
-                            <button
-                              onClick={() => copyToClipboard(details.url)}
-                              className="btn btn-ghost btn-xs"
-                            >
-                              <LinkIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-2 py-2 sm:px-4 sm:py-3 text-center">
-                        <button
-                          onClick={() => handleToggleStatus(platform)}
-                          className={`badge badge-sm text-xs focus:outline-none ${
-                            details.active ? 'badge-success' : 'badge-error'
-                          }`}
-                        >
-                          {details.active ? 'Active' : 'Inactive'}
-                        </button>
-                      </td>
-                      <td className="px-2 py-2 sm:px-4 sm:py-3 text-right">
-                        {editing === platform ? (
-                          <div className="flex justify-end gap-1">
-                            <button
-                              className="btn btn-success btn-xs"
-                              onClick={handleSaveClick}
-                            >
-                              Save
-                            </button>
-                            <button
-                              className="btn btn-error btn-xs"
-                              onClick={() => setEditing(null)}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
+                        </td>
+                        <td className="px-2 py-2 sm:px-4 sm:py-3">
+                          {editing === platform ? (
+                            <input
+                              type="text"
+                              value={newLink}
+                              onChange={(e) => setNewLink(e.target.value)}
+                              className="input input-bordered input-sm w-full max-w-[120px] sm:max-w-xs"
+                              disabled={isSaving}
+                            />
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <span className="truncate text-xs sm:text-sm max-w-[100px] sm:max-w-xs font-mono">
+                                {details.url}
+                              </span>
+                              <button
+                                onClick={() => copyToClipboard(details.url)}
+                                className="btn btn-ghost btn-xs"
+                              >
+                                <LinkIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-center">
                           <button
-                            className="btn btn-primary btn-xs"
-                            onClick={() => handleEditClick(platform)}
+                            onClick={() => handleToggleStatus(platform)}
+                            className="badge badge-sm badge-success text-xs focus:outline-none"
+                            disabled={isDeactivating && platformToToggle === platform}
                           >
-                            Edit
+                            Active
                           </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        </td>
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-right">
+                          {editing === platform ? (
+                            <div className="flex justify-end gap-1">
+                              <button
+                                className="btn btn-success btn-xs"
+                                onClick={handleSaveClick}
+                                disabled={isSaving}
+                              >
+                                {isSaving ? (
+                                  <span className="flex items-center">
+                                    <Loader className="w-3 h-3 mr-1 animate-spin" />
+                                    Saving
+                                  </span>
+                                ) : "Save"}
+                              </button>
+                              <button
+                                className="btn btn-error btn-xs"
+                                onClick={() => setEditing(null)}
+                                disabled={isSaving}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              className="btn btn-primary btn-xs"
+                              onClick={() => handleEditClick(platform)}
+                            >
+                              Edit
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="p-6 text-center">
+                  <p className="text-neutral-content opacity-70">No active social media links. Add one using the "Add Link" button.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Add Link Modal - Made more mobile friendly */}
+      {/* Add Link Modal - Now showing inactive social media with activation option */}
       {showAddLinkModal && (
         <div className="modal modal-open">
           <div className="modal-box w-11/12 max-w-sm sm:max-w-md p-4">
-            <h3 className="font-bold text-lg mb-4">Add New Social Media Link</h3>
-            <div className="grid grid-cols-1 gap-3">
-              {Object.entries(availableLinks).map(([platform, details]) => (
-                <button
-                  key={platform}
-                  onClick={() => handleAddLink(platform)}
-                  className="btn btn-outline flex items-center justify-start gap-3 text-sm"
-                >
-                  {platformIcons[platform]}
-                  {details.name}
-                </button>
-              ))}
-            </div>
+            <h3 className="font-bold text-lg mb-4">Add Social Media Link</h3>
+            {Object.keys(availableLinks).length > 0 ? (
+              <div className="grid grid-cols-1 gap-3">
+                {Object.entries(availableLinks).map(([platform, details]) => (
+                  <button
+                    key={platform}
+                    onClick={() => handleActivateSocial(platform)}
+                    className="btn btn-outline flex items-center justify-start gap-3 text-sm"
+                    disabled={isActivating && platformToToggle === platform}
+                  >
+                    {platformIcons[platform]}
+                    {details.name}
+                    <span className="badge badge-sm badge-error ml-auto">Inactive</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center py-4">No inactive social media links available.</p>
+            )}
             <div className="modal-action">
               <button 
                 className="btn btn-ghost btn-sm"
@@ -347,6 +475,92 @@ const SocialMediaLayout = () => {
             </div>
           </div>
           <div className="modal-backdrop" onClick={() => setShowAddLinkModal(false)}></div>
+        </div>
+      )}
+
+      {/* Status Confirmation Modal (for deactivation) */}
+      {showStatusConfirmation && platformToToggle && (
+        <div className="modal modal-open">
+          <div className="modal-box w-11/12 max-w-sm p-4">
+            <h3 className="font-bold text-lg mb-4">Change Status to Inactive?</h3>
+            <p className="mb-4">
+              Are you sure you want to set {displayedLinks[platformToToggle]?.name} to inactive?
+              This will remove it from the main list.
+            </p>
+            <div className="modal-action flex justify-end gap-2">
+              <button 
+                className="btn btn-ghost btn-sm"
+                onClick={() => {
+                  setShowStatusConfirmation(false);
+                  setPlatformToToggle(null);
+                }}
+                disabled={isDeactivating}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn btn-error btn-sm"
+                onClick={confirmToggleStatus}
+                disabled={isDeactivating}
+              >
+                {isDeactivating ? (
+                  <span className="flex items-center">
+                    <Loader className="w-3 h-3 mr-1 animate-spin" />
+                    Processing
+                  </span>
+                ) : "Set Inactive"}
+              </button>
+            </div>
+          </div>
+          <div className="modal-backdrop" onClick={() => {
+            if (!isDeactivating) {
+              setShowStatusConfirmation(false);
+              setPlatformToToggle(null);
+            }
+          }}></div>
+        </div>
+      )}
+
+      {/* Activation Confirmation Modal (for reactivation) */}
+      {showActivationConfirmation && platformToToggle && (
+        <div className="modal modal-open">
+          <div className="modal-box w-11/12 max-w-sm p-4">
+            <h3 className="font-bold text-lg mb-4">Activate Social Media</h3>
+            <p className="mb-4">
+              Are you sure you want to activate {availableLinks[platformToToggle]?.name}?
+              This will add it to your active social media list.
+            </p>
+            <div className="modal-action flex justify-end gap-2">
+              <button 
+                className="btn btn-ghost btn-sm"
+                onClick={() => {
+                  setShowActivationConfirmation(false);
+                  setPlatformToToggle(null);
+                }}
+                disabled={isActivating}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn btn-success btn-sm"
+                onClick={confirmActivation}
+                disabled={isActivating}
+              >
+                {isActivating ? (
+                  <span className="flex items-center">
+                    <Loader className="w-3 h-3 mr-1 animate-spin" />
+                    Activating
+                  </span>
+                ) : "Activate"}
+              </button>
+            </div>
+          </div>
+          <div className="modal-backdrop" onClick={() => {
+            if (!isActivating) {
+              setShowActivationConfirmation(false);
+              setPlatformToToggle(null);
+            }
+          }}></div>
         </div>
       )}
     </div>
