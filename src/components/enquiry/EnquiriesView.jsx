@@ -463,7 +463,7 @@ const EnquiriesView = () => {
         format: format
       });
 
-      const response = await axiosInstance.get(`/enquiries/export-enquiry?${queryParams}`, {
+      const response = await axiosInstance.get(`/enquiry/export-enquiry?${queryParams}`, {
         responseType: "blob",
       });
 

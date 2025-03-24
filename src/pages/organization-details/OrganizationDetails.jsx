@@ -280,7 +280,7 @@ const organizationSchema = yup.object().shape({
     .required('Email is required')
     .email('Enter a valid email address')
     .max(100, 'Email must be at most 100 characters'),
-    companyname: yup.string()
+  companyname: yup.string()
     .required('Companyname is required')
     .max(200, 'Companyname must be at most 200 characters'),
   phone: yup.string()
@@ -292,8 +292,10 @@ const OrganizationDetails = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
+  const [organizationDetails, setOrganizationDetails] = useState(null)
   const inputRef = useRef(null);
-
+  const [imageError, setImageError] = useState("")
+  let organizationId;
   const {
     register,
     handleSubmit,
@@ -309,9 +311,11 @@ const OrganizationDetails = () => {
     const fetchData = async () => {
       try {
         const response = await axiosInstance.get('/organization/organization-details');
-        
+
 
         const organizationData = response.data.organization[0];
+        setOrganizationDetails(organizationData)
+
         reset({
           email: organizationData.email || '',
           companyname: organizationData.companyName || '',
@@ -354,47 +358,62 @@ const OrganizationDetails = () => {
   };
 
   const onSubmit = async (formData) => {
-    setIsLoading(true);    
     const submitData = new FormData();
-
+    
     // Append all form data, including empty/null values
     Object.entries(formData).forEach(([key, value]) => {
       submitData.append(key, value === undefined ? '' : value);
     });
-
+    if (!imagePreview ) {
+      setImageError("Image is required")
+      return
+    }
+    setIsLoading(true);
     // If there is a logo file, append it
     if (logoFile) {
+      setImageError("")
       submitData.append('image', logoFile);
     }
 
     const toastId = toast.loading('Saving organization details...');
 
+    let response
     try {
-      const response = await axiosInstance.post('/organization/add-organization', submitData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      console.log(response.data);
-      
+
+      if (!organizationDetails.id) {
+
+        response = await axiosInstance.post('/organization/add-organization', submitData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      } else {
+        response = await axiosInstance.put(`/organization/edit-organization/${organizationDetails.id}`, submitData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      }
       playNotificationSound()
       toast.update(toastId, {
-        render: response.data.message||'Organization details saved successfully',
+        render: response.data.message || 'Organization details saved successfully',
         type: 'success',
         isLoading: false,
         autoClose: 3000,
       });
 
-      const organizationData = response.data.organization[0];
-      reset({
-        email: organizationData.email || '',
-        companyname: organizationData.companyName || '',
-        phone: organizationData.phoneNumber || '',
-      });
+      // const organizationData = response.data.organization[0];
+      // reset({
+      //   email: organizationData.email || '',
+      //   companyname: organizationData.companyName || '',
+      //   phone: organizationData.phoneNumber || '',
+      // });
 
-      if (updatedData.logo) {
-        setImagePreview(updatedData.logo);
-      }
+      // if (updatedData.logo) {
+      //   setImagePreview(updatedData.logo);
+      // }
+
+
     } catch (error) {
       console.error('Error saving organization details:', error);
       toast.update(toastId, {
@@ -554,7 +573,9 @@ const OrganizationDetails = () => {
             {/* Image Upload Section */}
             <div className="form-control col-span-1 md:col-span-2 flex justify-center mb-4">
               <label className="label">
-                <span className="label-text">Logo</span>
+                <span className="label-text">Logo
+                <span className="text-error ml-1">*</span>
+                </span>
               </label>
               <div
                 className="border-2 w-full md:w-96 border-dashed rounded-lg p-4 flex flex-col items-center justify-center text-center cursor-pointer bg-base-100"
@@ -585,13 +606,18 @@ const OrganizationDetails = () => {
                   </div>
                 )}
                 <input
+                
                   type="file"
                   accept="image/*"
                   className="hidden"
                   ref={inputRef}
                   onChange={handleImageUpload}
+
                 />
+
               </div>
+              {setImageError && <span className="text-red-500 text-sm mt-1">{imageError}</span>}
+
             </div>
 
             <FormField
@@ -629,7 +655,7 @@ const OrganizationDetails = () => {
               errors={errors}
               placeholder="Ex: https://maps.google.com/..."
             /> */}
-            
+
           </div>
           <div className="flex justify-end mt-6">
             <button
