@@ -90,7 +90,7 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
             items: [
                 // { name: 'Dashboard', path: '/', icon: Home },
                 // { name: 'Analytics', path: '/analytics', icon: BarChart2 },
-                { name: 'Enquiries', path: '/enquiries', icon: FileText, count: count.enquiries },
+                // { name: 'Enquiries', path: '/enquiries', icon: FileText, count: count.enquiries },
             ]
         },
         {
