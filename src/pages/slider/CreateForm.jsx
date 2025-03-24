@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import axiosInstance from "../../config/axios";
 import playNotificationSound from "../../utils/playNotification";
 
-function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen, sliderCount }) {
+function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen, sliderCount,sliderData }) {
   const [heading, setHeading] = useState("");
   const [description, setDescription] = useState("");
   const [tagline, setTagline] = useState("");
@@ -225,6 +225,8 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen, sli
       setIsSubmitting(false);
     }
   };
+  const existingOrders = sliderData.map((item) => item.order); // Extract used order numbers
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -336,7 +338,8 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen, sli
         </select>
         {errors.categoryError && <p className="text-error text-sm mt-1">{errors.categoryError}</p>}
       </div>
-      <div>
+      
+ {mode =="edit"?     <div>
   <label className="block font-medium">
     Order <span className="text-error">*</span>
   </label>
@@ -360,7 +363,38 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen, sli
     ))}
   </select>
   {errors.orderError && <p className="text-error text-sm mt-1">{errors.orderError}</p>}
-</div>
+</div>:  <div>
+    <label className="block font-medium">
+      Order <span className="text-error">*</span>
+    </label>
+    <select
+      className={`select select-bordered w-full ${
+        errors.orderError ? "select-error" : ""
+      }`}
+      value={order}
+      onChange={(e) => {
+        setOrder(e.target.value);
+        const orderError = validateField("order", e.target.value, mode);
+        setErrors((prev) => ({
+          ...prev,
+          orderError: orderError,
+        }));
+      }}
+    >
+      <option value="">Select Order</option>
+      {[...Array(8)]
+        .map((_, index) => index + 1) // Generate numbers from 1 to 8
+        .filter((num) => !existingOrders.includes(num)) // Exclude already used numbers
+        .map((num) => (
+          <option key={num} value={num}>
+            {num}
+          </option>
+        ))}
+    </select>
+    {errors.orderError && (
+      <p className="text-error text-sm mt-1">{errors.orderError}</p>
+    )}
+  </div>}
 
 
 

@@ -72,7 +72,7 @@ function ForgotPassword() {
                 setStep(2); // Move to OTP step
             }
         } catch (error) {
-            setMessage('Something went wrong. Please try again.');
+            setMessage(error.response.data.message||'Something went wrong. Please try again.');
             setSuccess(false);
         } finally {
             setIsLoading(false);

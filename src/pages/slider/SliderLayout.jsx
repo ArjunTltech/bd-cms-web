@@ -18,8 +18,7 @@ function SliderLayout() {
   const refreshSliderList = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get("/slider/slider-details");
-      
+      const response = await axiosInstance.get("/slider/slider-details");            
       setSlider(response.data.slider);  
     } catch (err) {
       setError("Failed to load Slider");
@@ -146,6 +145,7 @@ function SliderLayout() {
               mode={mode}
               setIsDrawerOpen={setIsDrawerOpen}
               sliderCount={slider.length}
+              sliderData ={slider}
             />
           </div>
         </div>
