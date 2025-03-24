@@ -1,23 +1,30 @@
 import { useState, useEffect, useCallback } from "react";
-import { Search } from "lucide-react";
+import { Search, Globe, Calendar, ArrowUpDown, ExternalLink, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import ClientForm from "./ClientForm";
-import ClientCard from "./ClientCard";
 import axiosInstance from "../../config/axios";
+import { toast } from "react-toastify";
 
 function ClientsLayout() {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editClient, setEditClient] = useState(null);
   const [mode, setMode] = useState("add");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState("name");
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState(null);
+  const itemsPerPage = 6;
 
   // Fetch Clients
   const refreshClientList = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get("/client/get-all-clients");
+      const response = await axiosInstance.get("/client/view-clients");
       setClients(response.data.data);
     } catch (err) {
       setError("Failed to load clients");
@@ -27,116 +34,298 @@ function ClientsLayout() {
     }
   }, []);
 
+  const totalClientCount = clients?.length
+
   useEffect(() => {
     refreshClientList();
   }, [refreshClientList]);
 
   // Handle Add New Client
   const handleAddNewClient = () => {
-    setEditClient(null); // Clear edit data
+    setEditClient(null);
     setMode("add");
     setIsDrawerOpen(true);
   };
 
   // Handle Edit Client
   const handleEditClient = (client) => {
-    setEditClient(client); // Set client data to edit
+    setEditClient(client);
     setMode("edit");
     setIsDrawerOpen(true);
   };
 
-  // Handle Delete Client
-  const handleDeleteClient = (clientId) => {
-    setClients((prevClients) =>
-      prevClients.filter((client) => client.id !== clientId)
-    );
+
+  // Handle Delete Confirmation Modal
+  const openDeleteModal = (client) => {
+    setClientToDelete(client);
+    setIsDeleteModalOpen(true);
   };
 
-  // Filter clients based on search query
-  const filteredClients = clients.filter((client) =>
-    client.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.company?.toLowerCase().includes(searchQuery.toLowerCase())
+  const closeDeleteModal = () => {
+    setClientToDelete(null);
+    setIsDeleteModalOpen(false);
+  };
+
+
+  // Handle Delete Client
+  const handleDeleteClient = async () => {
+    if (!clientToDelete) return;
+    try {
+      setSubmitting(true);
+      await axiosInstance.delete(`/client/delete-client/${clientToDelete.id}`);
+      await refreshClientList();
+      closeDeleteModal();
+      toast.success("Client deleted successfully")
+    } catch (err) {
+      console.error("Error deleting client:", err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Handle Page Change
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  // Sort clients
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  // Filter and sort clients
+  const filteredAndSortedClients = clients
+    .filter(
+      (client) =>
+        client.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        client.description?.toLowerCase().includes(searchQuery.toLowerCase()) 
+    )
+    .sort((a, b) => {
+      const aValue = (a[sortField] || "").toLowerCase();
+      const bValue = (b[sortField] || "").toLowerCase();
+      return sortDirection === "asc"
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredAndSortedClients.length / itemsPerPage);
+  const paginatedClients = filteredAndSortedClients.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, sortField, sortDirection]);
+
   return (
-    <div className="min-h-screen relative">
-      {/* Drawer */}
-      <div className="drawer drawer-end">
-        <input
-          id="new-client-drawer"
-          type="checkbox"
-          className="drawer-toggle"
-          checked={isDrawerOpen}
-          onChange={() => setIsDrawerOpen(!isDrawerOpen)}
-        />
-        <div className="drawer-content">
-          {/* Header Section */}
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-neutral-content">Clients</h1>
-            <button
-              className="btn btn-primary text-white gap-2"
-              onClick={handleAddNewClient}
-            >
-              + New Client
-            </button>
+    <div className="h-screen flex flex-col">
+      {/* Fixed Header Section */}
+      <div className="bg-base-100 p-4 border-b border-base-300">
+        <div className="flex justify-between items-center mb-4">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-neutral-content">Clients</h1>
+            <p>Total Clients : {totalClientCount}</p>
           </div>
-
-          {/* Search Section */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-8">
-            <div className="relative flex-grow">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search client..."
-                className="input input-bordered w-full focus:outline-none pl-10 bg-base-100 text-neutral-content"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Client Grid */}
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, index) => (
-                <div
-                  key={index}
-                  className="card bg-base-100 animate-pulse transition-all duration-300 ease-in-out transform hover:scale-105"
-                >
-                  {/* Image Skeleton */}
-                  <div className="h-48 bg-base-100 rounded-3xl transition-colors duration-300"></div>
-
-                  {/* Content Skeleton */}
-                  <div className="card-body p-4 space-y-3">
-                    <div className="h-4 bg-base-200 w-1/2 transition-colors duration-300"></div>
-                    <div className="h-6 bg-base-200 w-3/4 transition-colors duration-300"></div>
-                    <div className="h-4 bg-base-200 w-full transition-colors duration-300"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : error ? (
-            <div className="text-center text-red-500">{error}</div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredClients.map((client) => (
-                <ClientCard
-                  key={client.id}
-                  client={client}
-                  onEdit={() => handleEditClient(client)}
-                  onDelete={() => handleDeleteClient(client.id)}
-                />
-              ))}
-            </div>
-          )}
+          <button
+            className="btn btn-primary text-white gap-2"
+            onClick={handleAddNewClient}
+            disabled={submitting}
+          >
+            + New Client
+          </button>
         </div>
 
-        {/* Drawer Sidebar */}
-        <div className="drawer-side">
-          <label htmlFor="new-client-drawer" className="drawer-overlay"></label>
-          <div className="p-4 md:w-[40%] w-full sm:w-1/2 overflow-y-scroll bg-base-100 h-[85vh] text-base-content absolute bottom-4 right-4 rounded-lg shadow-lg">
-            <h2 className="text-lg font-bold mb-4">
+        {/* Search Section */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/50 w-5 h-5" />
+          <input
+            type="text"
+            placeholder="Search clients by name or description"
+            className="input input-bordered w-full pl-10 bg-base-100 text-base-content"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Table Container */}
+      <div className="flex-grow overflow-auto">
+        <div className="min-w-full">
+          {/* Table Header */}
+          <div className="bg-base-200 text-sm font-medium text-base-content sticky top-0 z-10">
+            <div className="grid grid-cols-12 gap-2 px-4 py-4 items-center">
+              <div className="col-span-1">Logo</div>
+              <div className="col-span-2 flex items-center cursor-pointer hover:text-primary" onClick={() => handleSort("name")}>
+                Client Name <ArrowUpDown size={14} className="ml-1" />
+              </div>
+              <div className="col-span-3">Description</div>
+              <div className="col-span-2 flex items-center cursor-pointer hover:text-primary" onClick={() => handleSort("createdAt")}>
+                Created At <ArrowUpDown size={14} className="ml-1" />
+              </div>
+              <div className="col-span-2 flex items-center ">
+                Website <Globe size={14} className="ml-1" />
+              </div>
+              <div className="col-span-2 text-center">Actions</div>
+            </div>
+          </div>
+
+
+          {/* Client List */}
+          <div className="divide-y-4 divide-base-300">
+            {paginatedClients.length > 0 ? (
+              paginatedClients.map((client) => (
+                <div
+                  key={client.id}
+                  className="grid grid-cols-12 gap-2 px-4 py-[1.2rem] items-center hover:bg-base-200 bg-base-100"
+                >
+                  <div className="col-span-1">
+                    {client.logo ? (
+                      <img
+                        src={client.logo}
+                        alt="Logo"
+                        className="h-8 w-8 object-cover rounded-full"
+                      />
+                    ) : (
+                      <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold">
+                        {client.name?.charAt(0)?.toUpperCase() || "?"}
+                      </div>
+                    )}
+                  </div>
+                  <div className="col-span-2 font-medium truncate">
+                    {client.name || "Unnamed Client"}
+                  </div>
+                  <div className="col-span-3 text-sm text-base-content/70 truncate">
+                    {client.description || "No description"}
+                  </div>
+                  <div className="col-span-2 text-sm text-base-content/70">
+                    {client.createdAt
+                      ? new Date(client.createdAt).toLocaleDateString("en-GB")
+                      : "N/A"}
+                  </div>
+                  <div className="col-span-2 truncate">
+                    {client.website ? (
+                      <a
+                        href={
+                          client.website.startsWith("http")
+                            ? client.website
+                            : `https://${client.website}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-info/65 hover:text-info/80 flex items-center"
+                      >
+                        {client.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                        <ExternalLink size={14} className="ml-1" />
+                      </a>
+                    ) : (
+                      <span className="text-base-content/50">No website</span>
+                    )}
+                  </div>
+                  <div className="col-span-2 flex justify-center space-x-2 flex-nowrap">
+                    <button
+                      onClick={() => handleEditClient(client)}
+                      className="btn btn-ghost btn-sm text-warning"
+                    >
+                      <Edit size={18} />
+                    </button>
+                    <button
+                      onClick={() => openDeleteModal(client)}
+                      className="btn btn-ghost btn-sm text-error"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-6 text-base-content/60 text-2xl font-extrabold">No Clients Found</div>
+            )}
+          </div>
+
+
+
+          {/* Delete Confirmation Modal */}
+          {isDeleteModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+              <div className="bg-base-100 p-6 rounded-lg shadow-lg max-w-sm w-full">
+                <h2 className="text-xl font-semibold mb-4">Confirm Delete</h2>
+                <p className="text-base-content/80">
+                  Are you sure you want to delete <strong>{clientToDelete?.name}</strong>?
+                </p>
+                <div className="flex justify-end space-x-4 mt-4">
+                  <button onClick={closeDeleteModal} className="btn btn-ghost">Cancel</button>
+                  <button onClick={handleDeleteClient} className="btn btn-error" disabled={submitting}>
+                    {submitting ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+      </div>
+
+      {/* Pagination */}
+      {!loading && !error && totalPages > 1 && (
+        <div className="py-4 px-6 border-t border-base-300 bg-base-100">
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-base-content/70">
+              Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+              {Math.min(currentPage * itemsPerPage, filteredAndSortedClients.length)} of{" "}
+              {filteredAndSortedClients.length} clients
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                className="btn btn-sm btn-ghost"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1 || submitting}
+              >
+                <ChevronLeft size={16} />
+              </button>
+              {[...Array(totalPages)].map((_, idx) => (
+                <button
+                  key={idx}
+                  className={`btn btn-sm ${currentPage === idx + 1
+                    ? "btn-primary text-primary-content"
+                    : "btn-ghost"
+                    }`}
+                  onClick={() => handlePageChange(idx + 1)}
+                  disabled={submitting}
+                >
+                  {idx + 1}
+                </button>
+              ))}
+              <button
+                className="btn btn-sm btn-ghost"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages || submitting}
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Drawer */}
+      {isDrawerOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end z-50">
+          <div className="w-full max-w-2xl bg-base-100 h-screen overflow-y-auto p-6">
+            <button
+              className="absolute top-4 right-4 text-base-content hover:text-error"
+              onClick={() => setIsDrawerOpen(false)}
+            >
+              ✖
+            </button>
+            <h2 className="text-2xl font-semibold text-base-content mb-6">
               {mode === "edit" ? "Edit Client" : "Add New Client"}
             </h2>
             <ClientForm
@@ -145,10 +334,13 @@ function ClientsLayout() {
               mode={mode}
               refreshClientList={refreshClientList}
               setIsDrawerOpen={setIsDrawerOpen}
+              submitting={submitting}
+              setSubmitting={setSubmitting}
             />
           </div>
         </div>
-      </div>
+      )}
+
     </div>
   );
 }

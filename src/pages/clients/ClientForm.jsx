@@ -61,7 +61,7 @@ function ClientForm({ onClientCreated, refreshClientList, initialData, mode, set
     formData.append("website", website);
     formData.append("description", content);
     if (imageFile) {
-      formData.append("logo", imageFile);
+      formData.append("image", imageFile);
     }
 
     try {
