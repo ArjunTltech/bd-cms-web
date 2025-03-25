@@ -68,7 +68,7 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen, sli
           ? null
           : "Category is required"; // Ensures a category is selected
       case 'order':
-        return value.trim().length > 0
+        return value.toString().trim().length > 0
           ? null
           : "Order is required"; // Ensures a category is selected
 
@@ -217,6 +217,8 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen, sli
       setSubHeading("")
       setImageFile(null);
       setImagePreview(null);
+      setCategory("")
+      setOrder("")
       setIsDrawerOpen(false);
     } catch (error) {
       console.error("Error handling service:", error);
@@ -457,6 +459,13 @@ function ServiceForm({ onServiceCreated, initialData, mode, setIsDrawerOpen, sli
           className="btn btn-outline w-full sm:w-1/2 border border-gray-400  "
           onClick={() => {
             setIsDrawerOpen(false), setErrors({}), setIsSubmitting(false), setImagePreview(null)
+            setHeading("");
+            setDescription("");
+            setTagline("");
+            setSubHeading("")
+            setImageFile(null);
+            setCategory("")
+            setOrder("")
           }}
         >
           Cancel
