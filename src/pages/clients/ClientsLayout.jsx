@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { Search, Globe, Calendar, ArrowUpDown, ExternalLink, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Globe, Calendar, ArrowUpDown, ExternalLink, Edit, Trash2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import ClientForm from "./ClientForm";
 import axiosInstance from "../../config/axios";
 import { toast } from "react-toastify";
+import Loader from "../../components/loader/Loader";
 
 function ClientsLayout() {
   const [clients, setClients] = useState([]);
@@ -125,6 +126,9 @@ function ClientsLayout() {
     setCurrentPage(1);
   }, [searchQuery, sortField, sortDirection]);
 
+
+
+
   return (
     <div className="h-screen flex flex-col">
       {/* Fixed Header Section */}
@@ -155,8 +159,21 @@ function ClientsLayout() {
           />
         </div>
       </div>
+  {/* Conditional Rendering based on Loading State */}
+      {loading ? (
+   <Loader text="Loading Clients..." />
+      ) : error ? (
+        <div className="flex justify-center items-center h-full text-error">
+          {error}
+          <button 
+            onClick={refreshClientList} 
+            className="btn btn-primary ml-4"
+          >
+            Retry
+          </button>
+        </div>
+      ) : (
 
-      {/* Table Container */}
       <div className="flex-grow overflow-auto">
         <div className="min-w-full">
           {/* Table Header */}
@@ -272,7 +289,9 @@ function ClientsLayout() {
 
         </div>
       </div>
+     )}
 
+     {/* Rest of your existing code (Pagination, Drawer, etc.) */}
       {/* Pagination */}
       {!loading && !error && totalPages > 1 && (
         <div className="py-4 px-6 border-t border-base-300 bg-base-100">

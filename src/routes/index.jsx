@@ -31,7 +31,7 @@ import Error500 from '../pages/error/Error500.jsx';
 import Error503 from '../pages/error/Error503.jsx';
 import FAQPage from '../pages/faq/FAQPage.jsx';
 import OrganizationDetails from '../pages/organization-details/OrganizationDetails.jsx';
-import ServiceLayout from '../pages/slider/SliderLayout.jsx';
+import SliderLayout from '../pages/slider/SliderLayout.jsx';
 import SpecialSymbol from './SpecialSymbol.jsx';
 
 
@@ -129,8 +129,8 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute><OrganizationDetails /></ProtectedRoute>,
       },
       {
-        path: 'services',
-        element: <ProtectedRoute><ServiceLayout /></ProtectedRoute>,
+        path: 'slider',
+        element: <ProtectedRoute><SliderLayout /></ProtectedRoute>,
       }
     ],
   },

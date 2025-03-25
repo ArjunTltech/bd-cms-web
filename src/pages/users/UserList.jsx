@@ -8,6 +8,7 @@ import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import axiosInstance from '../../config/axios';
 import DeleteConfirmModal from '../../components/ui/modal/DeleteConfirmModal';
 import playNotificationSound from "../../utils/playNotification";
+import Loader from "../../components/loader/Loader";
 
 // Enhanced Validation Schema using Yup
 const userSchema = yup.object().shape({
@@ -219,9 +220,7 @@ const UserList = () => {
       {/* User List Table */}
       <div className="overflow-x-auto mt-4">
         {isLoading ? (
-          <div className="flex justify-center items-center h-32">
-            <span className="loading loading-spinner loading-lg"></span>
-          </div>
+     <Loader  text="Loading Users..."/>
         ) : (
           <table className="table w-full text-lg">
             <thead>

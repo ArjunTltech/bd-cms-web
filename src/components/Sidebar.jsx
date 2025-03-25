@@ -31,6 +31,7 @@ import {
     Info,
     SlidersHorizontal
 } from "lucide-react";
+import logo from "../assets/images/logo-land.png"
 
 import { NavLink } from "react-router-dom";
 import Tippy from '@tippyjs/react';
@@ -104,12 +105,12 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
                 // { name: 'Team Members', path: '/team', icon: Users, count: count.team },
                 // { name: 'FAQs', path: '/faqs', icon: FileText, },
                 // { name: 'Background Image', path: '/services', icon: BriefcaseBusiness, count: count.services },
-                { name: 'Slider', path: '/services', icon: SlidersHorizontal, count: count.services },
+                { name: 'Slider', path: '/slider', icon: SlidersHorizontal, count: count.services },
                 { name: 'Organization Details', path: '/organization-details', icon: Info, },
-                   { name: 'Social Media', path: '/social', icon: Globe, count: count.socialMedia },
+                { name: 'Social Media', path: '/social', icon: Globe, count: count.socialMedia },
 
             ]
-         },
+        },
         {
             section: "User Management",
             items: [
@@ -211,7 +212,7 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
                 <div className="flex items-center justify-between h-16 px-3">
                     <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'w-0' : 'w-40'
                         }`}>
-                        <img src="https://connect.tltechnologies.net/static/media/Logo-TL.68926913554d603aa4fb.png" alt="" className="h-10 w-auto rounded-sm" />
+                        <img src={logo} alt="logo" className="h-auto w-40 rounded-lg mt-5" />
                     </div>
 
                     <button
@@ -232,15 +233,15 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
                 <nav className="px-2 h-[calc(100vh-4rem)] overflow-y-auto scrollbar-hidden pb-24">
                     {navigation.map((section, index) => {
                         // Filter items based on role requirements
-                        const filteredItems = section.items.filter(item => 
+                        const filteredItems = section.items.filter(item =>
                             !item.role || authState.role === item.role
                         );
-                        
+
                         // Skip rendering the entire section if no items remain after filtering
                         if (filteredItems.length === 0) {
                             return null;
                         }
-                        
+
                         return (
                             <div key={section.section} className={`${index > 0 ? 'mt-6' : 'mt-2'}`}>
                                 <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'h-0 opacity-0' : 'h-6 opacity-100'
@@ -271,7 +272,7 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
                         );
                     })}
                 </nav>
-                
+
             </aside>
 
             {/* Add custom styles for Tippy */}
