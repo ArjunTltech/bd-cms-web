@@ -89,7 +89,7 @@ function ForgotPassword() {
             if (response.data.success) {
                 setStep(3); // Move to reset password step
             }
-        } catch (error) {
+        } catch (error) {            
             setMessage('Error verifying OTP. Please try again.');
             setSuccess(false);
         } finally {

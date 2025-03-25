@@ -28,7 +28,7 @@ const schema = yup.object().shape({
 });
 
 const SeoLayout = () => {
-  const pages = ['Landingpage','Site'];
+  const pages = ['Landingpage'];
   const [selectedPage, setSelectedPage] = React.useState('Landingpage');
   const [isLoading, setIsLoading] = React.useState(false);
   
@@ -61,7 +61,7 @@ const SeoLayout = () => {
       setIsLoading(true);
       try {
         const response = await axiosInstance.get(`seo/get/${selectedPage}`);
-        const data = response.data;
+        const data = response.data.seoData;
 
         reset({
           title: {
@@ -113,7 +113,9 @@ const SeoLayout = () => {
   }, [selectedPage, reset]);
 
   const onSubmit = async (data) => {
-    try {      
+    try {     
+      console.log(data);
+       
       const response = await axiosInstance.post(`seo/upsert/${selectedPage}`, {
         pageTitle: selectedPage,
         title: data.title.default,

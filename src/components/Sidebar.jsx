@@ -100,7 +100,7 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
                 // { name: 'Blog Posts', path: '/posts', icon: PenTool, count: count.blogs },
                 { name: 'Clients', path: '/clients', icon: Briefcase, count: count.clients },
                 // { name: 'Documents', path: '/documents', icon: FileText },
-                // { name: 'SEO Editor', path: '/seo-editor', icon: Layers },
+                 { name: 'SEO Editor', path: '/seo-editor', icon: Layers },
                 // { name: 'Team Members', path: '/team', icon: Users, count: count.team },
                 // { name: 'FAQs', path: '/faqs', icon: FileText, },
                 // { name: 'Background Image', path: '/services', icon: BriefcaseBusiness, count: count.services },
@@ -129,7 +129,7 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
             section: "System",
             items: [
                 // { name: 'Notifications', path: '/notifications', icon: Bell, count: count.notifications },
-                // // { name: 'SEO', path: '/seo', icon: Globe },
+                // { name: 'SEO', path: '/seo', icon: Globe },
                 // { name: 'Mail Config', path: '/mail-config', icon: MailIcon },
                 { name: 'Settings', path: '/settings', icon: Settings },
                 // { name: 'Help & Docs', path: '/help', icon: HelpCircle }
