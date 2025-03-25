@@ -8,7 +8,7 @@ import { Eye, EyeOff, Mail, Lock, Loader, X } from 'lucide-react';
 import axiosInstance from '../../config/axios';
 import { useAuth } from '../../context/AuthContext';
 import playNotificationSound from '../../utils/playNotification';
-
+import logo from "../../assets/images/logo-latest.png"
 function LoginPage() {
     const navigate = useNavigate();
     const { login } = useAuth();
@@ -74,7 +74,7 @@ function LoginPage() {
                     <h2 className="text-3xl font-extrabold text-gray-200">Welcome back</h2>
                     <p className="mt-2 text-sm text-gray-200">Sign in to your account</p>
                 </div>
-                    <img src="https://connect.tltechnologies.net/static/media/Logo-TL.68926913554d603aa4fb.png" className='h-14 rounded-sm w-auto' alt="" /></div>
+                    <img src={logo} className='h-20  w-auto rounded-lg' alt="" /></div>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
                     {error && (

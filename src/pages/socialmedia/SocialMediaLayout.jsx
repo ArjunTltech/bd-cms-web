@@ -14,6 +14,7 @@ import {
   Loader
 } from 'lucide-react';
 import { FaPinterest, FaStore, FaGlobeAmericas, FaWhatsapp, FaInstagram, FaYoutube, FaLinkedin, FaFacebookF } from "react-icons/fa";
+import { SiGoogle  } from "react-icons/si"
 import axiosInstance from '../../config/axios';
 import { toast } from 'react-toastify';
 import playNotificationSound from '../../utils/playNotification';
@@ -45,7 +46,7 @@ const SocialMediaLayout = () => {
     linkedin: <FaLinkedin className="w-6 h-6 text-blue-700" />,
     map: <MapPin className="w-6 h-6 text-blue-700" />,
     pinterest: <FaPinterest className="w-6 h-6 text-[#BD081C]" />,
-    google_business: <FaStore className="w-6 h-6 text-blue-700" />,
+    google_business: <SiGoogle className="w-6 h-6 text-blue-700" />,
     website: <FaGlobeAmericas className="w-6 h-6" />
   };
 
@@ -318,9 +319,12 @@ const SocialMediaLayout = () => {
     <div className="card w-full bg-base-200 shadow-xl">
       <div className="card-body">
         <div className="card-title text-base md:text-2xl text-neutral-content flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div>
+          <h1 className="flex items-center gap-2">
             <Globe className="w-6 h-6 text-accent" />
             Social Media Management
+          </h1>
+<p>Active Social Media : {} </p>
           </div>
           {Object.keys(availableLinks).length > 0 && (
             <button 
