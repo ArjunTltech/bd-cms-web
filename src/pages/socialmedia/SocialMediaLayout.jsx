@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Instagram, 
-  Facebook, 
-  Share2, 
+import {
+  Instagram,
+  Facebook,
+  Share2,
   Youtube,
   Linkedin,
   Link as LinkIcon,
@@ -14,7 +14,7 @@ import {
   Loader
 } from 'lucide-react';
 import { FaPinterest, FaStore, FaGlobeAmericas, FaWhatsapp, FaInstagram, FaYoutube, FaLinkedin, FaFacebookF } from "react-icons/fa";
-import { SiGoogle  } from "react-icons/si"
+import { SiGoogle } from "react-icons/si"
 import axiosInstance from '../../config/axios';
 import { toast } from 'react-toastify';
 import playNotificationSound from '../../utils/playNotification';
@@ -27,6 +27,7 @@ const SocialMediaLayout = () => {
   const [error, setError] = useState(null);
   const [editing, setEditing] = useState(null);
   const [newLink, setNewLink] = useState("");
+  const [activeSocialCount, setActiveSocialCount] = useState()
   const [showAddLinkModal, setShowAddLinkModal] = useState(false);
   // Confirmation modals
   const [showStatusConfirmation, setShowStatusConfirmation] = useState(false);
@@ -56,9 +57,10 @@ const SocialMediaLayout = () => {
       try {
         setLoading(true);
         const response = await axiosInstance.get("/social/get-social");
-
         const activeLinks = {};
         const inactiveLinks = {};
+        // Directly calculate active count from fetched data
+        const totalActiveSocialCount = response.data.data.filter(link => link.isActive).length;
 
         response.data.data.forEach(link => {
           const platform = link.platform.toLowerCase();
@@ -70,7 +72,7 @@ const SocialMediaLayout = () => {
             active: link.isActive,
             lastChecked: new Date(link.updatedAt).toISOString().split('T')[0]
           };
-          
+
           // Sort links into active (displayed) and inactive (available)
           if (link.isActive) {
             activeLinks[platform] = linkData;
@@ -81,6 +83,7 @@ const SocialMediaLayout = () => {
 
         setDisplayedLinks(activeLinks);
         setAvailableLinks(inactiveLinks);
+        setActiveSocialCount(totalActiveSocialCount)
         setError(null);
       } catch (err) {
         setError("Failed to load social media links");
@@ -92,6 +95,7 @@ const SocialMediaLayout = () => {
 
     fetchSocialLinks();
   }, []);
+
 
   const handleEditClick = (platform) => {
     setEditing(platform);
@@ -108,10 +112,10 @@ const SocialMediaLayout = () => {
       setIsSaving(true);
       // Get the current social media entry being edited
       const currentEntry = displayedLinks[editing];
-      
+
       // Make the API call to update with id in URL
       const response = await axiosInstance.put(
-        `/social/update-social/${currentEntry.id}`, 
+        `/social/update-social/${currentEntry.id}`,
         {
           platform: currentEntry.name,
           url: newLink,
@@ -161,12 +165,12 @@ const SocialMediaLayout = () => {
   // Handle status toggling after confirmation (setting to inactive)
   const confirmToggleStatus = async () => {
     if (!platformToToggle) return;
-    
+
     try {
       setIsDeactivating(true);
       const platform = platformToToggle;
       const currentLink = displayedLinks[platform];
-      
+
       // Make API call to update status
       const response = await axiosInstance.put(
         `/social/update-social/${currentLink.id}`,
@@ -184,19 +188,22 @@ const SocialMediaLayout = () => {
           active: false,
           lastChecked: new Date().toISOString().split('T')[0]
         };
-        
+
         setAvailableLinks(prev => ({
           ...prev,
           [platform]: updatedLink
         }));
-        
+
         // Remove from displayed links
         setDisplayedLinks(prev => {
-          const updated = {...prev};
+          const updated = { ...prev };
           delete updated[platform];
           return updated;
         });
-        
+
+        // Decrement active social count
+        setActiveSocialCount(prev => prev - 1);
+
         playNotificationSound();
         toast.success("Social media set to inactive!");
       } else {
@@ -223,12 +230,12 @@ const SocialMediaLayout = () => {
   // Confirm activation of social media
   const confirmActivation = async () => {
     if (!platformToToggle) return;
-    
+
     try {
       setIsActivating(true);
       const platform = platformToToggle;
       const currentLink = availableLinks[platform];
-      
+
       // Make API call to update status to active
       const response = await axiosInstance.put(
         `/social/update-social/${currentLink.id}`,
@@ -246,19 +253,22 @@ const SocialMediaLayout = () => {
           active: true,
           lastChecked: new Date().toISOString().split('T')[0]
         };
-        
+
         setDisplayedLinks(prev => ({
           ...prev,
           [platform]: updatedLink
         }));
-        
+
         // Remove from available links
         setAvailableLinks(prev => {
-          const updated = {...prev};
+          const updated = { ...prev };
           delete updated[platform];
           return updated;
         });
-        
+
+        // Increment active social count
+        setActiveSocialCount(prev => prev + 1);
+
         playNotificationSound();
         toast.success("Social media activated successfully!");
       } else {
@@ -304,7 +314,7 @@ const SocialMediaLayout = () => {
       <div className="card w-full bg-base-200 shadow-xl p-6">
         <div className="text-error text-center">
           <p>{error}</p>
-          <button 
+          <button
             className="btn btn-primary mt-4"
             onClick={() => window.location.reload()}
           >
@@ -318,16 +328,16 @@ const SocialMediaLayout = () => {
   return (
     <div className="card w-full bg-base-200 shadow-xl">
       <div className="card-body">
-        <div className="card-title text-base md:text-2xl text-neutral-content flex items-center justify-between">
-          <div>
-          <h1 className="flex items-center gap-2">
-            <Globe className="w-6 h-6 text-accent" />
-            Social Media Management
-          </h1>
-<p>Active Social Media : {} </p>
+        <div className=" flex items-center justify-between">
+          <div className='space-y-1'>
+            <h1 className="card-title flex items-center gap-2 text-base md:text-2xl text-neutral-content">
+              <Globe className="w-6 h-6 text-accent" />
+              Social Media Management
+            </h1>
+            <p className='ml-8'>Active Social Media : {activeSocialCount} </p>
           </div>
           {Object.keys(availableLinks).length > 0 && (
-            <button 
+            <button
               className="btn btn-primary btn-sm"
               onClick={() => setShowAddLinkModal(true)}
             >
@@ -470,7 +480,7 @@ const SocialMediaLayout = () => {
               <p className="text-center py-4">No inactive social media links available.</p>
             )}
             <div className="modal-action">
-              <button 
+              <button
                 className="btn btn-ghost btn-sm"
                 onClick={() => setShowAddLinkModal(false)}
               >
@@ -492,7 +502,7 @@ const SocialMediaLayout = () => {
               This will remove it from the main list.
             </p>
             <div className="modal-action flex justify-end gap-2">
-              <button 
+              <button
                 className="btn btn-ghost btn-sm"
                 onClick={() => {
                   setShowStatusConfirmation(false);
@@ -502,7 +512,7 @@ const SocialMediaLayout = () => {
               >
                 Cancel
               </button>
-              <button 
+              <button
                 className="btn btn-error btn-sm"
                 onClick={confirmToggleStatus}
                 disabled={isDeactivating}
@@ -535,7 +545,7 @@ const SocialMediaLayout = () => {
               This will add it to your active social media list.
             </p>
             <div className="modal-action flex justify-end gap-2">
-              <button 
+              <button
                 className="btn btn-ghost btn-sm"
                 onClick={() => {
                   setShowActivationConfirmation(false);
@@ -545,7 +555,7 @@ const SocialMediaLayout = () => {
               >
                 Cancel
               </button>
-              <button 
+              <button
                 className="btn btn-success btn-sm"
                 onClick={confirmActivation}
                 disabled={isActivating}

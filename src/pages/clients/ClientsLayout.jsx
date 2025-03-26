@@ -104,7 +104,7 @@ function ClientsLayout() {
     .filter(
       (client) =>
         client.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        client.description?.toLowerCase().includes(searchQuery.toLowerCase()) 
+        client.description?.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .sort((a, b) => {
       const aValue = (a[sortField] || "").toLowerCase();
@@ -159,14 +159,14 @@ function ClientsLayout() {
           />
         </div>
       </div>
-  {/* Conditional Rendering based on Loading State */}
+      {/* Conditional Rendering based on Loading State */}
       {loading ? (
-   <Loader text="Loading Clients..." />
+        <Loader text="Loading Clients..." />
       ) : error ? (
         <div className="flex justify-center items-center h-full text-error">
           {error}
-          <button 
-            onClick={refreshClientList} 
+          <button
+            onClick={refreshClientList}
             className="btn btn-primary ml-4"
           >
             Retry
@@ -174,124 +174,124 @@ function ClientsLayout() {
         </div>
       ) : (
 
-      <div className="flex-grow overflow-auto">
-        <div className="min-w-full">
-          {/* Table Header */}
-          <div className="bg-base-200 text-sm font-medium text-base-content sticky top-0 z-10">
-            <div className="grid grid-cols-12 gap-2 px-4 py-4 items-center">
-              <div className="col-span-1">Logo</div>
-              <div className="col-span-2 flex items-center cursor-pointer hover:text-primary" onClick={() => handleSort("name")}>
-                Client Name <ArrowUpDown size={14} className="ml-1" />
+        <div className="flex-grow overflow-auto">
+          <div className="min-w-full">
+            {/* Table Header */}
+            <div className="bg-base-200 text-sm font-medium text-base-content sticky top-0 z-10">
+              <div className="grid grid-cols-12 gap-2 px-4 py-4 items-center">
+                <div className="col-span-1">Logo</div>
+                <div className="col-span-2 flex items-center cursor-pointer hover:text-primary" onClick={() => handleSort("name")}>
+                  Client Name <ArrowUpDown size={14} className="ml-1" />
+                </div>
+                <div className="col-span-3">Description</div>
+                <div className="col-span-2 flex items-center cursor-pointer hover:text-primary" onClick={() => handleSort("createdAt")}>
+                  Created At <ArrowUpDown size={14} className="ml-1" />
+                </div>
+                <div className="col-span-2 flex items-center ">
+                  Website <Globe size={14} className="ml-1" />
+                </div>
+                <div className="col-span-2 text-center">Actions</div>
               </div>
-              <div className="col-span-3">Description</div>
-              <div className="col-span-2 flex items-center cursor-pointer hover:text-primary" onClick={() => handleSort("createdAt")}>
-                Created At <ArrowUpDown size={14} className="ml-1" />
-              </div>
-              <div className="col-span-2 flex items-center ">
-                Website <Globe size={14} className="ml-1" />
-              </div>
-              <div className="col-span-2 text-center">Actions</div>
             </div>
-          </div>
 
 
-          {/* Client List */}
-          <div className="divide-y-4 divide-base-300">
-            {paginatedClients.length > 0 ? (
-              paginatedClients.map((client) => (
-                <div
-                  key={client.id}
-                  className="grid grid-cols-12 gap-2 px-4 py-[1.2rem] items-center hover:bg-base-200 bg-base-100"
-                >
-                  <div className="col-span-1">
-                    {client.logo ? (
-                      <img
-                        src={client.logo}
-                        alt="Logo"
-                        className="h-8 w-8 object-cover rounded-full"
-                      />
-                    ) : (
-                      <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold">
-                        {client.name?.charAt(0)?.toUpperCase() || "?"}
-                      </div>
-                    )}
-                  </div>
-                  <div className="col-span-2 font-medium truncate">
-                    {client.name || "Unnamed Client"}
-                  </div>
-                  <div className="col-span-3 text-sm text-base-content/70 truncate">
-                    {client.description || "No description"}
-                  </div>
-                  <div className="col-span-2 text-sm text-base-content/70">
-                    {client.createdAt
-                      ? new Date(client.createdAt).toLocaleDateString("en-GB")
-                      : "N/A"}
-                  </div>
-                  <div className="col-span-2 truncate">
-                    {client.website ? (
-                      <a
-                        href={
-                          client.website.startsWith("http")
-                            ? client.website
-                            : `https://${client.website}`
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-info/65 hover:text-info/80 flex items-center"
+            {/* Client List */}
+            <div className="divide-y-4 divide-base-300">
+              {paginatedClients.length > 0 ? (
+                paginatedClients.map((client) => (
+                  <div
+                    key={client.id}
+                    className="grid grid-cols-12 gap-2 px-4 py-[1.2rem] items-center hover:bg-base-200 bg-base-100"
+                  >
+                    <div className="col-span-1">
+                      {client.logo ? (
+                        <img
+                          src={client.logo}
+                          alt="Logo"
+                          className="h-8 w-8 object-cover rounded-full"
+                        />
+                      ) : (
+                        <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold">
+                          {client.name?.charAt(0)?.toUpperCase() || "?"}
+                        </div>
+                      )}
+                    </div>
+                    <div className="col-span-2 font-medium truncate">
+                      {client.name || "Unnamed Client"}
+                    </div>
+                    <div className="col-span-3 text-sm text-base-content/70 truncate">
+                      {client.description || "No description"}
+                    </div>
+                    <div className="col-span-2 text-sm text-base-content/70">
+                      {client.createdAt
+                        ? new Date(client.createdAt).toLocaleDateString("en-GB")
+                        : "N/A"}
+                    </div>
+                    <div className="col-span-2 truncate">
+                      {client.website ? (
+                        <a
+                          href={
+                            client.website.startsWith("http")
+                              ? client.website
+                              : `https://${client.website}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-info/65 hover:text-info/80 flex items-center"
+                        >
+                          {client.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                          <ExternalLink size={14} className="ml-1" />
+                        </a>
+                      ) : (
+                        <span className="text-base-content/50">No website</span>
+                      )}
+                    </div>
+                    <div className="col-span-2 flex justify-center space-x-2 flex-nowrap">
+                      <button
+                        onClick={() => handleEditClient(client)}
+                        className="btn btn-ghost btn-sm text-warning"
                       >
-                        {client.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                        <ExternalLink size={14} className="ml-1" />
-                      </a>
-                    ) : (
-                      <span className="text-base-content/50">No website</span>
-                    )}
+                        <Edit size={18} />
+                      </button>
+                      <button
+                        onClick={() => openDeleteModal(client)}
+                        className="btn btn-ghost btn-sm text-error"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="col-span-2 flex justify-center space-x-2 flex-nowrap">
-                    <button
-                      onClick={() => handleEditClient(client)}
-                      className="btn btn-ghost btn-sm text-warning"
-                    >
-                      <Edit size={18} />
-                    </button>
-                    <button
-                      onClick={() => openDeleteModal(client)}
-                      className="btn btn-ghost btn-sm text-error"
-                    >
-                      <Trash2 size={18} />
+                ))
+              ) : (
+                <div className="text-center py-6 text-base-content/60 text-2xl font-extrabold">No Clients Found</div>
+              )}
+            </div>
+
+
+
+            {/* Delete Confirmation Modal */}
+            {isDeleteModalOpen && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                <div className="bg-base-100 p-6 rounded-lg shadow-lg max-w-sm w-full">
+                  <h2 className="text-xl font-semibold mb-4">Confirm Delete</h2>
+                  <p className="text-base-content/80">
+                    Are you sure you want to delete <strong>{clientToDelete?.name}</strong>?
+                  </p>
+                  <div className="flex justify-end space-x-4 mt-4">
+                    <button onClick={closeDeleteModal} className="btn btn-ghost">Cancel</button>
+                    <button onClick={handleDeleteClient} className="btn btn-error" disabled={submitting}>
+                      {submitting ? "Deleting..." : "Delete"}
                     </button>
                   </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-6 text-base-content/60 text-2xl font-extrabold">No Clients Found</div>
-            )}
-          </div>
-
-
-
-          {/* Delete Confirmation Modal */}
-          {isDeleteModalOpen && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-              <div className="bg-base-100 p-6 rounded-lg shadow-lg max-w-sm w-full">
-                <h2 className="text-xl font-semibold mb-4">Confirm Delete</h2>
-                <p className="text-base-content/80">
-                  Are you sure you want to delete <strong>{clientToDelete?.name}</strong>?
-                </p>
-                <div className="flex justify-end space-x-4 mt-4">
-                  <button onClick={closeDeleteModal} className="btn btn-ghost">Cancel</button>
-                  <button onClick={handleDeleteClient} className="btn btn-error" disabled={submitting}>
-                    {submitting ? "Deleting..." : "Delete"}
-                  </button>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
+          </div>
         </div>
-      </div>
-     )}
+      )}
 
-     {/* Rest of your existing code (Pagination, Drawer, etc.) */}
+      {/* Rest of your existing code (Pagination, Drawer, etc.) */}
       {/* Pagination */}
       {!loading && !error && totalPages > 1 && (
         <div className="py-4 px-6 border-t border-base-300 bg-base-100">

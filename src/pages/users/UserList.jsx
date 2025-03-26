@@ -1,4 +1,4 @@
-import { EyeIcon, EyeOffIcon } from "lucide-react"; 
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
@@ -68,7 +68,7 @@ const UserList = () => {
       const sortedUsers = response.data.data.sort((a, b) =>
         a.name.toLowerCase().localeCompare(b.name.toLowerCase())
       );
-  
+
       setUsers(sortedUsers);
     } catch (error) {
       toast.error("Failed to load users");
@@ -77,8 +77,8 @@ const UserList = () => {
       setIsLoading(false);
     }
   };
-  
-  
+
+
 
   useEffect(() => {
     fetchUsers();
@@ -132,8 +132,8 @@ const UserList = () => {
       fetchUsers();
     } catch (error) {
       console.log(error);
-      
-      toast.error(error.response.data.message ? error.response.data.message:'Failed to update user' );
+
+      toast.error(error.response.data.message ? error.response.data.message : 'Failed to update user');
     } finally {
       setIsSubmitting(false);
     }
@@ -160,17 +160,17 @@ const UserList = () => {
   };
 
   // Reusable form field component
-  const FormField = ({ 
-    label, 
-    name, 
-    register, 
-    errors, 
-    type = "text", 
-    mandatory = false, 
-    ...props 
+  const FormField = ({
+    label,
+    name,
+    register,
+    errors,
+    type = "text",
+    mandatory = false,
+    ...props
   }) => {
     const [showPassword, setShowPassword] = useState(false);
-  
+
     return (
       <div className="form-control mt-4 relative">
         <label className="label">
@@ -200,17 +200,17 @@ const UserList = () => {
       </div>
     );
   };
-  
-    
-  
+
+
+
   return (
     <div className="p-6 bg-base-100 rounded-lg space-y-6">
       {/* Header */}
       <div className="md:flex space-y-2 md:space-y-0 block justify-between items-center">
         {/* <h1 className="text-2xl font-bold text-neutral-content">User List</h1> */}
         <div className=' space-y-2'>
-       <h1 className="text-3xl font-bold text-neutral-content">User List </h1>
-       <p >Total Users : {users.length}</p>
+          <h1 className="text-3xl font-bold text-neutral-content">User List </h1>
+          <p >Total Users : {users.length}</p>
         </div>
         <button className="btn btn-primary" onClick={() => openModal()}>
           Add User
@@ -220,7 +220,7 @@ const UserList = () => {
       {/* User List Table */}
       <div className="overflow-x-auto mt-4">
         {isLoading ? (
-     <Loader  text="Loading Users..."/>
+          <Loader text="Loading Users..." />
         ) : (
           <table className="table w-full text-lg">
             <thead>
@@ -279,20 +279,20 @@ const UserList = () => {
             {selectedUser ? 'Edit User' : 'Add New User'}
           </h3>
           <form onSubmit={handleSubmit(handleSubmitUser)}>
-            <FormField 
-              label="Name" 
-              name="name" 
-              register={register} 
+            <FormField
+              label="Name"
+              name="name"
+              register={register}
               errors={errors}
               mandatory={true}
               placeholder="Enter full name"
             />
 
-            <FormField 
-              label="Email" 
-              name="email" 
+            <FormField
+              label="Email"
+              name="email"
               type="email"
-              register={register} 
+              register={register}
               errors={errors}
               mandatory={true}
               placeholder="Enter email address"
@@ -300,21 +300,21 @@ const UserList = () => {
 
             {!selectedUser && (
               <>
-                <FormField 
-                  label="Password" 
-                  name="password" 
+                <FormField
+                  label="Password"
+                  name="password"
                   type="password"
-                  register={register} 
+                  register={register}
                   errors={errors}
                   mandatory={true}
                   placeholder="Enter password"
                 />
 
-                <FormField 
-                  label="Confirm Password" 
-                  name="confirmPassword" 
+                <FormField
+                  label="Confirm Password"
+                  name="confirmPassword"
                   type="password"
-                  register={register} 
+                  register={register}
                   errors={errors}
                   mandatory={true}
                   placeholder="Confirm password"
@@ -329,8 +329,8 @@ const UserList = () => {
                   <span className="text-error ml-1">*</span>
                 </span>
               </label>
-              <select 
-                className={`select select-bordered ${errors.role ? 'select-error' : ''}`} 
+              <select
+                className={`select select-bordered ${errors.role ? 'select-error' : ''}`}
                 {...register('role')}
               >
                 <option value="admin">Admin</option>
@@ -362,7 +362,7 @@ const UserList = () => {
       </dialog>
 
       {/* Custom Delete Confirmation Modal */}
-      <DeleteConfirmModal 
+      <DeleteConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}

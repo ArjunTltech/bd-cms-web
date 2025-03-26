@@ -46,11 +46,8 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
     const [count, setCount] = useState({
         enquiries: 0,
         comments: 0,
-        notifications: 0,
-        blogs: 0,
-        services: 0,
-        testimonials: 0,
-        newsletters: 0,
+        sliders: 0,
+        users:0,
         clients: 0,
         socialMedia: 0,
     });
@@ -59,17 +56,14 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
         const fetchCounts = async () => {
             try {
                 const { data } = await axiosInstance.get('/stats/total-counts');
+                console.log(data,"daattaa");
                 setCount({
                     enquiries: data.counts.enquiries.unread || 0,
                     comments: 0,
-                    notifications: data.counts.notifications.unread || 0,
-                    blogs: data.counts.blogs.total || 0,
-                    services: data.counts.services.total || 0,
-                    testimonials: data.counts.testimonials.total || 0,
-                    newsletters: data.counts.newsletter.subscribers || 0,
+                    sliders: data.counts.sliders.total || 0, 
+                    users: data.counts.users.total || 0, 
                     clients: data.counts.clients.total || 0,
                     socialMedia: data.counts.social.active || 0,
-                    team: data.counts.team.active || 0
                 });
             } catch (error) {
                 console.error('Error fetching sidebar counts:', error);
@@ -89,23 +83,18 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
         {
             section: "Dashboard",
             items: [
-                // { name: 'Dashboard', path: '/', icon: Home },
-                // { name: 'Analytics', path: '/analytics', icon: BarChart2 },
-                // { name: 'Enquiries', path: '/enquiries', icon: FileText, count: count.enquiries },
+                { name: 'Dashboard', path: '/', icon: Home },
+                { name: 'Analytics', path: '/analytics', icon: BarChart2 },
+                { name: 'Enquiries', path: '/enquiries', icon: FileText, count: count.enquiries },
             ]
         },
         {
             section: "Content Management",
             items: [
                 { name: 'Pages', path: '/pages', icon: Layout },
-                // { name: 'Blog Posts', path: '/posts', icon: PenTool, count: count.blogs },
                 { name: 'Clients', path: '/clients', icon: Briefcase, count: count.clients },
-                // { name: 'Documents', path: '/documents', icon: FileText },
                  { name: 'SEO Editor', path: '/seo-editor', icon: Layers },
-                // { name: 'Team Members', path: '/team', icon: Users, count: count.team },
-                // { name: 'FAQs', path: '/faqs', icon: FileText, },
-                // { name: 'Background Image', path: '/services', icon: BriefcaseBusiness, count: count.services },
-                { name: 'Slider', path: '/slider', icon: SlidersHorizontal, count: count.services },
+                { name: 'Slider', path: '/slider', icon: SlidersHorizontal, count: count.sliders },
                 { name: 'Organization Details', path: '/organization-details', icon: Info, },
                 { name: 'Social Media', path: '/social', icon: Globe, count: count.socialMedia },
 
@@ -114,18 +103,10 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
         {
             section: "User Management",
             items: [
-                { name: 'Users', path: '/users', icon: Users, role: 'superadmin' },
+                { name: 'Users', path: '/users', icon: Users, role: 'superadmin', count: count.users },
                 // { name: 'Roles & Permissions', path: '/roles', icon: Lock },
             ]
         },
-        // {
-        //     section: "Marketing",
-        //     items: [
-        //         { name: 'Newsletters', path: '/newsletters', icon: Mail, count: count.newsletters },
-        //         // { name: 'Comments', path: '/comments', icon: MessageSquare, count: count.comments },
-        //         { name: 'Testimonials', path: '/testimonials', icon: MessageSquare, count: count.testimonials },
-        //     ]
-        // },
         {
             section: "System",
             items: [
@@ -230,7 +211,7 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
                     </button>
                 </div>
 
-                <nav className="px-2 h-[calc(100vh-4rem)] overflow-y-auto scrollbar-hidden pb-24">
+                <nav className="px-2 h-[calc(100vh-4rem)] overflow-y-auto scrollbar-hidden pt-8 pb-24">
                     {navigation.map((section, index) => {
                         // Filter items based on role requirements
                         const filteredItems = section.items.filter(item =>
