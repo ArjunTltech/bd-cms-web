@@ -3,13 +3,61 @@ import { toast } from "react-toastify";
 import axiosInstance from "../../config/axios";
 import playNotificationSound from "../../utils/playNotification";
 
-function ClientForm({ onClientCreated, refreshClientList, initialData, mode, setIsDrawerOpen }) {
+function ClientForm({ onClientCreated, refreshClientList, initialData, mode, setIsDrawerOpen, submitting, setSubmitting }) {
   const [title, setTitle] = useState("");
   const [website, setWebsite] = useState("");
   const [content, setContent] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [errors, setErrors] = useState({});
   const inputRef = useRef(null);
+
+
+  // Validation constants
+  const MAX_DESCRIPTION_LENGTH = 36;
+  const MAX_TITLE_LENGTH = 20;
+  const MAX_WEBSITE_LENGTH = 150;
+
+  // Validation function
+  const validateForm = () => {
+    const newErrors = {};
+
+    // Title validation
+    if (!title.trim()) {
+      newErrors.title = "Title is required";
+    } else if (!isNaN(title.trim())) {
+      newErrors.title = "Title cannot be a number";
+    } else if (title.trim().length > MAX_TITLE_LENGTH) {
+      newErrors.title = `Title must be less than ${MAX_TITLE_LENGTH} characters`;
+    }
+
+
+    // Website validation
+    if (!website.trim()) {
+      newErrors.website = "Website is required";
+    } else if (website.trim().length > MAX_WEBSITE_LENGTH) {
+      newErrors.website = `Website must be less than ${MAX_WEBSITE_LENGTH} characters`;
+    } else {
+      // Basic URL validation
+      const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+      if (!urlPattern.test(website)) {
+        newErrors.website = "Please enter a valid website URL";
+      }
+    }
+
+    // Description validation (only limit, not required)
+    if (content.trim().length > MAX_DESCRIPTION_LENGTH) {
+      newErrors.content = `Short Description must be less than ${MAX_DESCRIPTION_LENGTH} characters`;
+    }
+
+    // Image validation (Required)
+    if (!imageFile && !imagePreview) {
+      newErrors.image = "Image is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   useEffect(() => {
     if (mode === "edit" && initialData) {
@@ -46,15 +94,22 @@ function ClientForm({ onClientCreated, refreshClientList, initialData, mode, set
     setContent("");
     setImageFile(null);
     setImagePreview(null);
+    setErrors({});
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!title || !website || !content) {
-      toast.error("Please fill in all fields.");
+    // if (!title || !website || !content) {
+    //   toast.error("Please fill in all fields.");
+    //   return;
+    // }
+
+    // Validate form before submission
+    if (!validateForm()) {
       return;
     }
+
 
     const formData = new FormData();
     formData.append("name", title);
@@ -65,6 +120,7 @@ function ClientForm({ onClientCreated, refreshClientList, initialData, mode, set
     }
 
     try {
+      setSubmitting(true);
       if (mode === "add") {
         await axiosInstance.post("/client/create-client", formData, {
           headers: {
@@ -95,6 +151,8 @@ function ClientForm({ onClientCreated, refreshClientList, initialData, mode, set
     } catch (error) {
       console.error("Error handling client:", error);
       toast.error("Failed to save client. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -102,49 +160,90 @@ function ClientForm({ onClientCreated, refreshClientList, initialData, mode, set
     <form onSubmit={handleSubmit}>
       {/* Title Input */}
       <div className="form-control mb-4">
-        <label className="label">
+        <label className="label flex justify-start">
           <span className="label-text">Title</span>
+          <span className="text-error ml-1">*</span>
         </label>
         <input
           type="text"
           placeholder="Client name"
-          className="input input-bordered border-accent"
+          className={`input input-bordered ${errors.title ? 'input-error' : 'border-accent'}`}
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            setErrors(prev => ({ ...prev, title: '' }));
+          }}
+          disabled={submitting}
+          maxLength={MAX_TITLE_LENGTH}
         />
+        {errors.title && (
+          <label className="label">
+            <span className="label-text-alt text-error">{errors.title}</span>
+          </label>
+        )}
       </div>
 
       {/* Website Input */}
       <div className="form-control mb-4">
-        <label className="label">
+        <label className="label flex justify-start">
           <span className="label-text">Website</span>
+          <span className="text-error ml-1">*</span>
+
         </label>
         <input
-          type="url"
+          type="text"
           placeholder="Enter website URL"
-          className="input input-bordered border-accent"
+          className={`input input-bordered ${errors.website ? 'input-error' : 'border-accent'}`}
           value={website}
-          onChange={(e) => setWebsite(e.target.value)}
+          onChange={(e) => {
+            setWebsite(e.target.value);
+            setErrors(prev => ({ ...prev, website: '' }));
+          }}
+          disabled={submitting}
+          maxLength={MAX_WEBSITE_LENGTH}
         />
+        {errors.website && (
+          <label className="label">
+            <span className="label-text-alt text-error">{errors.website}</span>
+          </label>
+        )}
       </div>
 
       {/* Content Input */}
       <div className="form-control mb-4">
         <label className="label">
-          <span className="label-text">Description</span>
+          <span className="label-text">Short Description</span>
+          <span className="label-text-alt text-base-content/50">
+            {content.trim().length}/{MAX_DESCRIPTION_LENGTH}
+          </span>
         </label>
         <textarea
-          className="textarea textarea-bordered"
+          className={`textarea textarea-bordered ${errors.content ? 'textarea-error' : ''}`}
           placeholder="Write client description..."
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) => {
+            // Limit input to MAX_DESCRIPTION_LENGTH
+            const inputValue = e.target.value;
+            if (inputValue.length <= MAX_DESCRIPTION_LENGTH) {
+              setContent(inputValue);
+              setErrors(prev => ({ ...prev, content: '' }));
+            }
+          }}
+          disabled={submitting}
+          maxLength={MAX_DESCRIPTION_LENGTH}
         ></textarea>
+        {errors.content && (
+          <label className="label">
+            <span className="label-text-alt text-error">{errors.content}</span>
+          </label>
+        )}
       </div>
 
       {/* Image Upload */}
       <div className="form-control mb-4">
-        <label className="label">
+        <label className="label flex justify-start">
           <span className="label-text">Logo</span>
+          <span className="text-error ml-1">*</span>
         </label>
         <div
           className="border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center text-center cursor-pointer bg-base-100"
@@ -185,13 +284,31 @@ function ClientForm({ onClientCreated, refreshClientList, initialData, mode, set
             ref={inputRef}
             onChange={handleImageChange}
           />
+
         </div>
+        {errors.image && (
+          <label className="label">
+            <span className="label-text-alt text-error">{errors.image}</span>
+          </label>
+        )}
+
       </div>
 
       {/* Submit Button */}
       <div className="form-control">
-        <button type="submit" className="btn btn-primary">
-          {mode === "add" ? "Create" : "Update"}
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={submitting}
+        >
+          {submitting ? (
+            <>
+              <span className="loading loading-spinner"></span>
+              {mode === "add" ? "Creating..." : "Updating..."}
+            </>
+          ) : (
+            mode === "add" ? "Create" : "Update"
+          )}
         </button>
       </div>
     </form>
