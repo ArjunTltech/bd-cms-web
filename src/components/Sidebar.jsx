@@ -29,7 +29,8 @@ import {
     MailIcon,
     BriefcaseBusiness,
     Info,
-    SlidersHorizontal
+    SlidersHorizontal,
+    Grid 
 } from "lucide-react";
 import logo from "../assets/images/logo-land.png"
 
@@ -56,7 +57,6 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
         const fetchCounts = async () => {
             try {
                 const { data } = await axiosInstance.get('/stats/total-counts');
-                console.log(data,"daattaa");
                 setCount({
                     enquiries: data.counts.enquiries.unread || 0,
                     comments: 0,
@@ -95,6 +95,7 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
                 { name: 'Clients', path: '/clients', icon: Briefcase, count: count.clients },
                  { name: 'SEO Editor', path: '/seo-editor', icon: Layers },
                 { name: 'Slider', path: '/slider', icon: SlidersHorizontal, count: count.sliders },
+                { name: 'Category', path: '/category', icon: Grid  },
                 { name: 'Organization Details', path: '/organization-details', icon: Info, },
                 { name: 'Social Media', path: '/social', icon: Globe, count: count.socialMedia },
 

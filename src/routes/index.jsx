@@ -33,6 +33,7 @@ import FAQPage from '../pages/faq/FAQPage.jsx';
 import OrganizationDetails from '../pages/organization-details/OrganizationDetails.jsx';
 import SliderLayout from '../pages/slider/SliderLayout.jsx';
 import SpecialSymbol from './SpecialSymbol.jsx';
+import CategoryLayout from '../pages/category/CategoryLayout.jsx';
 
 
 export const router = createBrowserRouter([
@@ -131,6 +132,10 @@ export const router = createBrowserRouter([
       {
         path: 'slider',
         element: <ProtectedRoute><SliderLayout /></ProtectedRoute>,
+      },
+      {
+        path: 'category',
+        element: <ProtectedRoute><CategoryLayout /></ProtectedRoute>,
       }
     ],
   },
