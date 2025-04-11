@@ -9,13 +9,17 @@ import {
     Briefcase,
     X,
     Layout,
+    Globe,
+    Layers,
+    Info,
+    SlidersHorizontal,
+    Grid ,
     Image,
     Mail,
     MessageSquare,
     FileImage,
     ShoppingCart,
     Calendar,
-    Globe,
     Bell,
     BookOpen,
     Tag,
@@ -23,14 +27,12 @@ import {
     PenTool,
     HelpCircle,
     Lock,
-    Layers,
     Database,
     Shield,
     MailIcon,
     BriefcaseBusiness,
-    Info,
-    SlidersHorizontal,
-    Grid 
+    Building ,
+    BadgeInfo 
 } from "lucide-react";
 import logo from "../assets/images/logo-land.png"
 
@@ -94,9 +96,10 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
                 { name: 'Pages', path: '/pages', icon: Layout },
                 { name: 'Clients', path: '/clients', icon: Briefcase, count: count.clients },
                  { name: 'SEO Editor', path: '/seo-editor', icon: Layers },
+                 { name: 'Tooltip Management', path: '/tooltips', icon: Info  },
                 { name: 'Slider', path: '/slider', icon: SlidersHorizontal, count: count.sliders },
                 { name: 'Category', path: '/category', icon: Grid  },
-                { name: 'Organization Details', path: '/organization-details', icon: Info, },
+                { name: 'Organization Details', path: '/organization-details', icon: BadgeInfo , },
                 { name: 'Social Media', path: '/social', icon: Globe, count: count.socialMedia },
 
             ]

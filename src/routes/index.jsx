@@ -34,6 +34,7 @@ import OrganizationDetails from '../pages/organization-details/OrganizationDetai
 import SliderLayout from '../pages/slider/SliderLayout.jsx';
 import SpecialSymbol from './SpecialSymbol.jsx';
 import CategoryLayout from '../pages/category/CategoryLayout.jsx';
+import TooltipLayout from '../pages/tooltips/TooltipsLayout.jsx';
 
 
 export const router = createBrowserRouter([
@@ -136,6 +137,10 @@ export const router = createBrowserRouter([
       {
         path: 'category',
         element: <ProtectedRoute><CategoryLayout /></ProtectedRoute>,
+      },
+      {
+        path: 'tooltips',
+        element: <ProtectedRoute><TooltipLayout /></ProtectedRoute>,
       }
     ],
   },
