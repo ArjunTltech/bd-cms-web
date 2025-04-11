@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Search, Plus, PenLine, Trash } from "lucide-react";
 import axiosInstance from "../../config/axios";
 import { toast } from "react-toastify";
+import DeleteConfirmModal from "../../components/ui/modal/DeleteConfirmModal";
 
 function CategoryLayout() {
   // Active category tab
@@ -14,6 +15,11 @@ function CategoryLayout() {
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Delete modal states
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Form states
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -52,7 +58,6 @@ function CategoryLayout() {
           setServices(response.data.services || []);
           break;
         case "product":
-            
           setProducts(response.data.products || []);
           break;
       }
@@ -68,10 +73,22 @@ function CategoryLayout() {
     fetchData();
   }, [fetchData]);
 
+  // Initiate delete process
+  const initiateDelete = (item) => {
+    setItemToDelete(item);
+    setShowDeleteModal(true);
+  };
+
   // Handle CRUD operations
-  const handleDelete = async (id) => {    
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    
     try {
+      setIsDeleting(true);
+      
       let endpoint;
+      const id = itemToDelete.id;
+      
       switch (activeTab) {
         case "business":
           endpoint = `/category/delete-business/${id}`;
@@ -85,20 +102,23 @@ function CategoryLayout() {
           endpoint = `/category/delete-product/${id}`;
           setProducts((prev) => prev.filter((item) => item.id !== id));
           break;
-      }
+        }
       
-    let response=  await axiosInstance.delete(endpoint);
-          toast.success(response.data.message);
-
+      const response = await axiosInstance.delete(endpoint);
+      toast.success(response.data.message);
       
-      
+      // Close modal after successful deletion
+      setShowDeleteModal(false);
+      setItemToDelete(null);
     } catch (err) {
       console.error(`Error deleting ${activeTab}:`, err);
-      setError(`Failed to delete ${activeTab}`);
+      toast.error(`Failed to delete ${activeTab}`);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  const handleEdit = (item) => {
+  const handleEdit = (item) => {    
     setEditItem(item);
     setMode("edit");
     setIsDrawerOpen(true);
@@ -221,8 +241,8 @@ function CategoryLayout() {
                   key={item.id}
                   item={item}
                   type={activeTab}
-                  onDelete={() => handleDelete(item.id)}
                   onEdit={() => handleEdit(item)}
+                  onDeleteClick={() => initiateDelete(item)}
                 />
               ))}
             </div>
@@ -246,15 +266,29 @@ function CategoryLayout() {
           </div>
         </div>
       </div>
+      
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        isLoading={isDeleting}
+        title={`Delete ${activeTab}`}
+        message={
+          `Are you sure you want to delete ${
+            activeTab
+        }`
+    }
+      />
     </div>
   );
 }
 
 // Card Component for displaying category items
-function CategoryCard({ item, type, onDelete, onEdit }) {
+function CategoryCard({ item, type, onEdit, onDeleteClick }) {
   const displayName = type === "business" ? item.business : 
                      type === "service" ? item.service : item.products;
-  
+   
   return (
     <div className="card bg-base-100 shadow-xl transition-all duration-300 ease-in-out hover:shadow-2xl">
       <div className="card-body">
@@ -270,7 +304,7 @@ function CategoryCard({ item, type, onDelete, onEdit }) {
           </button>
           <button 
             className="btn btn-sm btn-error btn-outline"
-            onClick={onDelete}
+            onClick={onDeleteClick}
           >
             <Trash size={16} /> Delete
           </button>
@@ -280,58 +314,117 @@ function CategoryCard({ item, type, onDelete, onEdit }) {
   );
 }
 
-// Form Component for adding/editing categories
-function CategoryForm({ type, onSubmitSuccess, initialData, mode, setIsDrawerOpen }) {
-  const [formData, setFormData] = useState({
+// Form Component for adding/editing categories with validation
+function CategoryForm({ type, onSubmitSuccess, initialData, mode, setIsDrawerOpen }) {  
+    const [formData, setFormData] = useState({
     [type]: initialData ? (
       type === "business" ? initialData.business :
       type === "service" ? initialData.service : initialData.products
     ) : ""
   });
   
+  const [validationError, setValidationError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState(null);
-  
+  useEffect(() => {
+    setFormData({
+      [type]: initialData ? (
+        type === "business" ? initialData.business :
+        type === "service" ? initialData.service : initialData.products
+      ) : ""
+    });
+    setValidationError("");
+    setFormError(null);
+  }, [type, initialData]);
   const handleChange = (e) => {
+    const value = e.target.value;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: value
     });
-  };
-  
-  const handleSubmit = async (e) => {
-    e.preventDefault();
     
-    try {
-      setSubmitting(true);
-      setFormError(null);
-      
-      // Use the correct route based on the mode and type
-      let endpoint;
-      if (mode === "edit" && initialData) {
-        // For editing, it seems your backend routes are not provided for update
-        // You may need to add these or use a general update endpoint
-        endpoint = `/${type}/${initialData.id}`;
-      } else {
-        // For adding new items, use the create routes
-        endpoint = type === "business" ? "/category/create-business" :
-                  type === "service" ? "/category/create-service" : "/category/create-product";
-      }
-      
-      // Use POST for both create and update (based on your routes)
-     let response = await axiosInstance.post(endpoint, formData);
-     toast.success(response.data.message);
-      
-      onSubmitSuccess();
-      setIsDrawerOpen(false);
-    } catch (err) {
-      console.error(`Error submitting ${type}:`, err);
-      setFormError(`Failed to ${mode} ${type}. Please try again.`);
-    } finally {
-      setSubmitting(false);
+    // Clear validation errors when user types
+    if (validationError) {
+      setValidationError("");
     }
   };
   
+  const validateForm = () => {
+    // Validation rules
+    if (!formData[type] || formData[type].trim() === "") {
+      setValidationError("Name cannot be empty");
+      return false;
+    }
+    
+    if (formData[type].length < 3) {
+      setValidationError("Name must be at least 3 characters long");
+      return false;
+    }
+    
+    if (formData[type].length > 50) {
+      setValidationError("Name cannot exceed 50 characters");
+      return false;
+    }
+    
+    // Check for special characters except spaces and hyphens
+    const specialCharsRegex = /[!@#$%^&*()_+=[\]{};':"\\|,.<>/?]+/;
+    if (specialCharsRegex.test(formData[type])) {
+      setValidationError("Name should not contain special characters");
+      return false;
+    }
+    
+    return true;
+  };
+  const resetForm = () => {
+    setFormData({ [type]: "" });
+    setValidationError("");
+    setFormError(null);
+  };
+  
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  // Validate the form first
+  if (!validateForm()) {
+    return;
+  }
+
+  try {
+    setSubmitting(true);
+    setFormError(null);
+    
+    let endpoint;
+    let method;
+    
+    if (mode === "edit" && initialData) {
+      // For editing, use update endpoints with PUT method
+      method = "put";
+      endpoint = type === "business" ? `/category/update-business/${initialData.id}` :
+                type === "service" ? `/category/update-service/${initialData.id}` : 
+                `/category/update-product/${initialData.id}`;
+    } else {
+      // For adding new items, use POST method with create routes
+      method = "post";
+      endpoint = type === "business" ? "/category/create-business" :
+                type === "service" ? "/category/create-service" : 
+                "/category/create-product";
+    }
+    
+    // Use the appropriate HTTP method (POST or PUT)
+    const response = await axiosInstance[method](endpoint, formData);
+    toast.success(response.data.message);
+    resetForm();
+    
+    onSubmitSuccess();
+    setIsDrawerOpen(false);
+  } catch (err) {
+    console.error(`Error submitting ${type}:`, err);
+    setFormError(err.response?.data?.message || `Failed to ${mode} ${type}. Please try again.`);
+    toast.error(`Failed to ${mode} ${type}`);
+  } finally {
+    setSubmitting(false);
+  }
+};
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="form-control w-full">
@@ -339,17 +432,23 @@ function CategoryForm({ type, onSubmitSuccess, initialData, mode, setIsDrawerOpe
           <span className="label-text">
             {type === "business" ? "Business Name" : 
              type === "service" ? "Service Name" : "Product Name"}
+           <span className="label-text-alt text-red-500">*</span>
           </span>
         </label>
         <input
           type="text"
           name={type}
           placeholder={`Enter ${type} name`}
-          className="input input-bordered w-full"
+          className={`input input-bordered w-full ${validationError ? 'input-error' : ''}`}
           value={formData[type]}
           onChange={handleChange}
-          required
+          
         />
+        {validationError && (
+          <label className="label">
+            <span className="label-text-alt text-error">{validationError}</span>
+          </label>
+        )}
       </div>
       
       {formError && (
@@ -362,7 +461,7 @@ function CategoryForm({ type, onSubmitSuccess, initialData, mode, setIsDrawerOpe
         <button
           type="button"
           className="btn btn-sm btn-outline"
-          onClick={() => setIsDrawerOpen(false)}
+          onClick={() => {resetForm(),setIsDrawerOpen(false)}}
         >
           Cancel
         </button>

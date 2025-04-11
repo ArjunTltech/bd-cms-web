@@ -79,9 +79,9 @@ const TooltipLayout = () => {
       const fetchSingleTooltip = async () => {
         setIsLoading(true);
         try {
-          const response = await axiosInstance.get(`/tooltips/view-tooltip/${activeFieldType}`);
-          if (response.data && response.data.tooltip) {
-            const tooltip = response.data.tooltip;
+          const response = await axiosInstance.get(`/tooltips/view-tooltip/${activeFieldType}`);          
+          if (response.data && response.data.data) {
+            const tooltip = response.data.data;
             
             // Update form values
             setValue('title', tooltip.title || '');

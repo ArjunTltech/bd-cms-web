@@ -230,8 +230,8 @@ const Profile = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axiosInstance.get('/users/get-profile');
-        setUser(response.data);
+        const response = await axiosInstance.get('/users/get-profile');        
+        setUser(response.data.userById);
       } catch (error) {
         toast.error('Error fetching user data.');
         console.error('Error fetching user data:', error);
