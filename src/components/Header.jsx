@@ -55,7 +55,7 @@ function Header({ onToggleSidebar, isCollapsed }) {
   const fetchNotifications = async () => {
     try {
       const response = await axiosInstance.get("notification/get-all-notifications");
-      setNotifications(response.data);
+      setNotifications(response.data.notification);
     } catch (error) {
       console.error("Error fetching notifications:", error);
     }

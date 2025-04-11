@@ -14,7 +14,7 @@ const Notification = () => {
     const fetchNotifications = async () => {
       try {
         const response = await axiosInstance.get('notification/get-all-notifications');
-        const sortedNotifications = response.data
+        const sortedNotifications = response.data.notification
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
           .slice(0, NOTIFICATIONS_LIMIT); // Limit to first 15 notifications
         setNotifications(sortedNotifications);
@@ -28,7 +28,6 @@ const Notification = () => {
 
     if (socket) {
       socket.on('new-notification', (notification) => {
-        console.log('New notification received:', notification);
         setNotifications((prevNotifications) => {
           const newNotifications = [notification, ...prevNotifications];
           return newNotifications.slice(0, NOTIFICATIONS_LIMIT);
@@ -46,6 +45,8 @@ const Notification = () => {
   const markAsRead = async (notificationId) => {
     try {
       await axiosInstance.put(`notification/mark-as-read/${notificationId}`);
+      toast.success(response.data.message)
+
       setNotifications(prevNotifications =>
         prevNotifications.map(notification =>
           notification.id === notificationId
@@ -61,7 +62,8 @@ const Notification = () => {
 
   const markAllAsRead = async () => {
     try {
-      await axiosInstance.put('notification/mark-all-as-read');
+   let response=   await axiosInstance.put('notification/mark-all-as-read');
+   toast.success(response.data.message)
       setNotifications(prevNotifications =>
         prevNotifications.map(notification => ({ ...notification, isRead: true }))
       );
@@ -73,10 +75,12 @@ const Notification = () => {
 
   const deleteNotification = async (notificationId) => {
     try {
-      await axiosInstance.delete(`notification/delete/${notificationId}`);
+     let response= await axiosInstance.delete(`notification/delete/${notificationId}`);
+     toast.success(response.data.message)
       setNotifications(prevNotifications =>
         prevNotifications.filter(notification => notification.id !== notificationId)
       );
+
     } catch (error) {
       console.error('Error deleting notification:', error);
       toast.error('Failed to delete notification');
@@ -85,7 +89,8 @@ const Notification = () => {
 
   const clearAllNotifications = async () => {
     try {
-      await axiosInstance.delete('notification/clear-all-notifications');
+    let response =  await axiosInstance.delete('notification/clear-all-notifications');
+    toast.success(response.data.message)
       setNotifications([]);
     } catch (error) {
       console.error('Error deleting all notifications:', error);
