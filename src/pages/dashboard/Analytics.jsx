@@ -1,8 +1,9 @@
 import React from "react";
 import CountryAnalytics from "../../components/chart/CountryAnalytics";
-import PageStatisticsChart from "../../components/chart/PageStatisticChart";
-import AnalyticsTable from "../../components/chart/AnalyticsTable";
+// import PageStatisticsChart from "../../components/chart/PageStatisticChart";
+// import AnalyticsTable from "../../components/chart/AnalyticsTable";
 import TrafficSourcesChart from "../../components/chart/TrafficSourcesChart";
+import EventNameCount from "../../components/chart/EventNameCount";
 
 function Analytics() {
   const metrics = [
@@ -22,7 +23,8 @@ function Analytics() {
 
       <div className="grid grid-cols-1 md:grid-cols-1 xl:grid-cols-1 2xl:grid-cols-2 gap-6">
 
-        <AnalyticsTable />
+        {/* <AnalyticsTable /> */}
+        <EventNameCount/>
         <TrafficSourcesChart/>
       </div>
 
