@@ -35,6 +35,7 @@ import SliderLayout from '../pages/slider/SliderLayout.jsx';
 import SpecialSymbol from './SpecialSymbol.jsx';
 import CategoryLayout from '../pages/category/CategoryLayout.jsx';
 import TooltipLayout from '../pages/tooltips/TooltipsLayout.jsx';
+import ChatbotPage from '../pages/chatbot/ChatbotPage.jsx';
 
 
 export const router = createBrowserRouter([
@@ -141,7 +142,11 @@ export const router = createBrowserRouter([
       {
         path: 'tooltips',
         element: <ProtectedRoute><TooltipLayout /></ProtectedRoute>,
-      }
+      },
+      {
+        path: 'chatbot',
+        element: <ProtectedRoute><ChatbotPage /></ProtectedRoute>,
+      },
     ],
   },
   {

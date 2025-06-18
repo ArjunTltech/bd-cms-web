@@ -36,6 +36,7 @@ const TotalActiveUsers = () => {
                     description="Last 30 days"
                     icon={User}
                     iconColor="text-teal-500"
+                    tooltip="Number of users currently active on your platform."
                 />
             )}
         </div>

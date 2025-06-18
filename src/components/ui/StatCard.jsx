@@ -1,29 +1,41 @@
 import React from 'react';
 import CountUp from 'react-countup';
 
-function StatCard({ 
-  title, 
-  value, 
-  description, 
-  icon: Icon, 
+function StatCard({
+  title,
+  value,
+  description,
+  icon: Icon,
   iconColor = "text-blue-500",
   trend,
   trendValue,
-  isLoading = false
+  isLoading = false,
+  tooltip
 }) {
   return (
     <div className="relative overflow-hidden bg-base-100 rounded-xl shadow-sm  hover:shadow-lg transition-shadow duration-200">
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
-            <span className={`p-2 rounded-lg ${iconColor} bg-opacity-10`}>
-              <Icon className={`w-6 h-6 ${iconColor}`} />
-            </span>
-            <h3 className="text-xl font-medium text-neutral-content">
-              {title}
-            </h3>
-          </div>
-          
+  <span className={`p-2 rounded-lg ${iconColor} bg-opacity-10`}>
+    <Icon className={`w-6 h-6 ${iconColor}`} />
+  </span>
+  <h3 className="text-xl font-medium text-neutral-content">
+    {title}
+  </h3>
+
+  {/* Tooltip Wrapper */}
+  {tooltip && <div className="relative group">
+    <span className="w-4 h-4 bg-gray-500 text-white text-xs rounded-full flex items-center justify-center cursor-pointer">
+      ℹ️
+    </span>
+    <span className="absolute top-full sm:left-full sm:top-1/2 sm:-translate-y-1/2 left-1/2 -translate-x-1/2 sm:translate-x-0 mt-2 sm:mt-0 p-2 bg-gray-700 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-[80vw] sm:w-[240px] max-w-[80vw] whitespace-normal break-words z-50">
+      {tooltip}
+    </span>
+  </div>}
+</div>
+
+
           {trend && (
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
               ${trend === 'up' ? 'text-success' : 'text-error'}`}>

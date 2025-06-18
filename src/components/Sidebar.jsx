@@ -32,7 +32,8 @@ import {
     MailIcon,
     BriefcaseBusiness,
     Building ,
-    BadgeInfo 
+    BadgeInfo ,
+    Bot
 } from "lucide-react";
 import logo from "../assets/images/logo-land.png"
 
@@ -53,12 +54,15 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
         users:0,
         clients: 0,
         socialMedia: 0,
+        chatBot:0
     });
     const { authState } = useAuth();
     useEffect(() => {
         const fetchCounts = async () => {
             try {
                 const { data } = await axiosInstance.get('/stats/total-counts');
+                console.log(data);
+                
                 setCount({
                     enquiries: data.counts.enquiries.unread || 0,
                     comments: 0,
@@ -66,6 +70,7 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
                     users: data.counts.users.total || 0, 
                     clients: data.counts.clients.total || 0,
                     socialMedia: data.counts.social.active || 0,
+                    chatBot:data.counts.chatBot.total||0
                 });
             } catch (error) {
                 console.error('Error fetching sidebar counts:', error);
@@ -98,6 +103,7 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
                  { name: 'SEO Editor', path: '/seo-editor', icon: Layers },
                  { name: 'Tooltip Management', path: '/tooltips', icon: Info  },
                 { name: 'Slider', path: '/slider', icon: SlidersHorizontal, count: count.sliders },
+                { name: 'Chatbot', path: '/chatbot', icon: Bot, count: count.chatBot },
                 { name: 'Category', path: '/category', icon: Grid  },
                 { name: 'Organization Details', path: '/organization-details', icon: BadgeInfo , },
                 { name: 'Social Media', path: '/social', icon: Globe, count: count.socialMedia },
