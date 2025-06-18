@@ -365,6 +365,7 @@ const EnquiriesView = () => {
   const [enquiries, setEnquiries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [pagination,setPagination]=useState([])
   const [filters, setFilters] = useState({
     status: '',
     startDate: '',
@@ -411,7 +412,7 @@ const EnquiriesView = () => {
       setPagination(response.data.pagination);
     } catch (error) {
       console.error("Failed to fetch enquiries", error);
-      toast.error("Failed to load enquiries");
+      // toast.error("Failed to load enquiries");
     } finally {
       setLoading(false);
     }
@@ -431,6 +432,7 @@ const EnquiriesView = () => {
 
   const handleDeleteEnquiry = (id) => {
     setEnquiries((prev) => prev.filter((enquiry) => enquiry.id !== id));
+      toast.success( "Enquiry deleted successfully!");
 
     // If this was the last item on the page, go back a page
     // if (enquiries.length === 1 && pagination.currentPage > 1) {

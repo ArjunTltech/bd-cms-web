@@ -35,6 +35,7 @@ const TotalPageViews = () => {
                     description="Last 30 days"
                     icon={Eye}
                     iconColor="text-teal-500"
+                    tooltip="Number of pages viewed by all visitors during a period."
                 />
             )}
         </div>

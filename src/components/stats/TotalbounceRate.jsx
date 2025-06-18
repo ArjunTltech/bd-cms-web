@@ -37,6 +37,7 @@ const TotalBounceRate = () => {
                     description="Percent in Last 30 days"
                     icon={TrendingDown }
                     iconColor="text-red-500"
+                    tooltip="Percentage of visitors who leave after viewing only one page"
                 />
             )}
         </div>

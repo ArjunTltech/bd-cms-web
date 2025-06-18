@@ -35,6 +35,7 @@ const TotalSubscribers = () => {
                     description="Subscribed"
                     icon={Mail}
                     iconColor="text-yellow-500"
+                    tooltip="Number of users who have subscribed to your newsletter or updates."
                 />
             )}
         </div>

@@ -35,6 +35,7 @@ const TotalEnquiryStat = () => {
                     description="Received"
                     icon={Clipboard}
                     iconColor="text-blue-500"
+                    tooltip="Total inquiries submitted via your forms."
                 />
             )}
         </div>
