@@ -11,12 +11,14 @@ import {
   Smartphone,
   Clock,
   Database,
-  Save
+  Save,
+
+
 } from 'lucide-react';
 import { useNotification } from '../../context/SocketContext';
 import { useTheme } from '../../context/ThemeContext';
 import axiosInstance from '../../config/axios';
-
+import { settingsVersionInfo } from '../../components/data/version'
 
 const Settings = () => {
   const {
@@ -145,6 +147,42 @@ const Settings = () => {
               disabled={!notificationsEnabled}
             />
           </div>
+        </div>
+      </Card>
+      <Card className="p-6 mb-6">
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="text-lg font-semibold mb-4 flex items-center">
+              <Globe className="w-5 h-5 mr-2 " />
+              Version & System Details
+            </h2>
+
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <span className="w-32 text-sm font-medium ">Version</span>
+                <span className="font-mono text-sm bg-primary/80  px-2 py-1 rounded">
+                  v{settingsVersionInfo.version}
+                </span>
+              </div>
+
+              <div className="flex items-center">
+                <span className="w-32 text-sm font-medium ">Release Date</span>
+                <span className="text-sm">{settingsVersionInfo.releaseDate || '-'}</span>
+              </div>
+
+              <div className="flex items-center">
+                <span className="w-32 text-sm font-medium ">Environment</span>
+                <span className={`text-xs px-2 py-1 rounded ${process.env.NODE_ENV === 'production'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                  {process.env.NODE_ENV || 'development'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+
         </div>
       </Card>
       {/* Language and Region */}

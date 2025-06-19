@@ -13,7 +13,7 @@ import {
     Layers,
     Info,
     SlidersHorizontal,
-    Grid ,
+    Grid,
     Image,
     Mail,
     MessageSquare,
@@ -22,7 +22,6 @@ import {
     Calendar,
     Bell,
     BookOpen,
-    Tag,
     Folder,
     PenTool,
     HelpCircle,
@@ -31,58 +30,54 @@ import {
     Shield,
     MailIcon,
     BriefcaseBusiness,
-    Building ,
-    BadgeInfo ,
-    Bot
+    Building,
+    BadgeInfo,
+    Bot,
+    GitCommit
 } from "lucide-react";
-import logo from "../assets/images/logo-land.png"
-
+import logo from "../assets/images/logo-land.png";
 import { NavLink } from "react-router-dom";
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 import { useEffect, useState } from "react";
 import axiosInstance from "../config/axios";
 import { useAuth } from "../context/AuthContext";
+import {versionInfo} from '../components/data/version'
 
 
 function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
-
     const [count, setCount] = useState({
         enquiries: 0,
         comments: 0,
         sliders: 0,
-        users:0,
+        users: 0,
         clients: 0,
         socialMedia: 0,
-        chatBot:0
+        chatBot: 0
     });
     const { authState } = useAuth();
+
     useEffect(() => {
         const fetchCounts = async () => {
             try {
                 const { data } = await axiosInstance.get('/stats/total-counts');
-                console.log(data);
-                
                 setCount({
                     enquiries: data.counts.enquiries.unread || 0,
                     comments: 0,
-                    sliders: data.counts.sliders.total || 0, 
-                    users: data.counts.users.total || 0, 
+                    sliders: data.counts.sliders.total || 0,
+                    users: data.counts.users.total || 0,
                     clients: data.counts.clients.total || 0,
                     socialMedia: data.counts.social.active || 0,
-                    chatBot:data.counts.chatBot.total||0
+                    chatBot: data.counts.chatBot.total || 0
                 });
             } catch (error) {
                 console.error('Error fetching sidebar counts:', error);
-                // Keep the previous state on error
                 setCount(prevCount => prevCount);
             }
         };
 
         fetchCounts();
-
-        const interval = setInterval(fetchCounts, 60000); // Refresh every minute
-
+        const interval = setInterval(fetchCounts, 60000);
         return () => clearInterval(interval);
     }, []);
 
@@ -100,31 +95,25 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
             items: [
                 { name: 'Pages', path: '/pages', icon: Layout },
                 { name: 'Clients', path: '/clients', icon: Briefcase, count: count.clients },
-                 { name: 'SEO Editor', path: '/seo-editor', icon: Layers },
-                 { name: 'Tooltip Management', path: '/tooltips', icon: Info  },
+                { name: 'SEO Editor', path: '/seo-editor', icon: Layers },
+                { name: 'Tooltip Management', path: '/tooltips', icon: Info },
                 { name: 'Slider', path: '/slider', icon: SlidersHorizontal, count: count.sliders },
                 { name: 'Chatbot', path: '/chatbot', icon: Bot, count: count.chatBot },
-                { name: 'Category', path: '/category', icon: Grid  },
-                { name: 'Organization Details', path: '/organization-details', icon: BadgeInfo , },
+                { name: 'Category', path: '/category', icon: Grid },
+                { name: 'Organization Details', path: '/organization-details', icon: BadgeInfo },
                 { name: 'Social Media', path: '/social', icon: Globe, count: count.socialMedia },
-
             ]
         },
         {
             section: "User Management",
             items: [
                 { name: 'Users', path: '/users', icon: Users, role: 'superadmin', count: count.users },
-                // { name: 'Roles & Permissions', path: '/roles', icon: Lock },
             ]
         },
         {
             section: "System",
             items: [
-                // { name: 'Notifications', path: '/notifications', icon: Bell, count: count.notifications },
-                // { name: 'SEO', path: '/seo', icon: Globe },
-                // { name: 'Mail Config', path: '/mail-config', icon: MailIcon },
                 { name: 'Settings', path: '/settings', icon: Settings },
-                // { name: 'Help & Docs', path: '/help', icon: HelpCircle }
             ]
         },
     ];
@@ -221,14 +210,12 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
                     </button>
                 </div>
 
-                <nav className="px-2 h-[calc(100vh-4rem)] overflow-y-auto scrollbar-hidden pt-8 pb-24">
+                <nav className="px-2 h-[calc(100vh-8rem)] overflow-y-auto scrollbar-hidden pt-8 pb-4">
                     {navigation.map((section, index) => {
-                        // Filter items based on role requirements
                         const filteredItems = section.items.filter(item =>
                             !item.role || authState.role === item.role
                         );
 
-                        // Skip rendering the entire section if no items remain after filtering
                         if (filteredItems.length === 0) {
                             return null;
                         }
@@ -264,9 +251,25 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
                     })}
                 </nav>
 
+                {/* Version Footer - Fixed at bottom */}
+                <div className={`absolute bottom-0 left-0 right-0 border-t border-base-300 transition-all duration-300 ${isCollapsed ? 'px-2' : 'px-4'}`}>
+                    <div className="flex items-center justify-center h-12">
+                        {isCollapsed ? (
+                            <Tippy content={`Version ${versionInfo.version}`} placement="right">
+                                <div className="badge badge-ghost badge-sm font-bold text-base">
+                                    v{versionInfo.version.split('.')[0]}
+                                </div>
+                            </Tippy>
+                        ) : (
+                            <div className="flex items-center gap-2 text-xs text-neutral-content/70 w-full justify-center">
+                                <span className="truncate text-lg font-bold">Version {versionInfo.version}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </aside>
 
-            {/* Add custom styles for Tippy */}
+            {/* Tippy styles */}
             <style>{`
                 .tippy-box {
                     background-color: rgb(17, 24, 39);
