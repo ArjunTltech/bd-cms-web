@@ -94,6 +94,7 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
             section: "Content Management",
             items: [
                 { name: 'Pages', path: '/pages', icon: Layout },
+                { name: 'brochures', path: '/brochures', icon: Layout },
                 { name: 'Clients', path: '/clients', icon: Briefcase, count: count.clients },
                 { name: 'SEO Editor', path: '/seo-editor', icon: Layers },
                 { name: 'Tooltip Management', path: '/tooltips', icon: Info },

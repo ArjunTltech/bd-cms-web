@@ -36,6 +36,7 @@ import SpecialSymbol from './SpecialSymbol.jsx';
 import CategoryLayout from '../pages/category/CategoryLayout.jsx';
 import TooltipLayout from '../pages/tooltips/TooltipsLayout.jsx';
 import ChatbotPage from '../pages/chatbot/ChatbotPage.jsx';
+import BrochureLayout from '../pages/brochure/BrochureLayout.jsx';
 
 
 export const router = createBrowserRouter([
@@ -86,6 +87,10 @@ export const router = createBrowserRouter([
       {
         path: '/enquiries',
         element: <ProtectedRoute><EnquiriesView /></ProtectedRoute>,
+      },
+      {
+        path: '/brochures',
+        element: <ProtectedRoute><BrochureLayout /></ProtectedRoute>,
       },
       {
         path: '/notifications',
