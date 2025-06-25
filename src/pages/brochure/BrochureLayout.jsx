@@ -17,8 +17,8 @@ function BrochureLayout() {
     try {
       setLoading(true);
       const response = await axiosInstance.get("/brochure/get-all-brochure");
-      console.log(response)
-      setBrochures(response.data.data);
+      console.log("Brochure API response:", response.data);
+      setBrochures(response.data?.brochures || []); // ✅ Corrected line
     } catch (err) {
       setError("Failed to load brochures");
       console.error("Error fetching brochures:", err);
@@ -47,10 +47,12 @@ function BrochureLayout() {
     setIsDrawerOpen(true);
   };
 
-  const filteredBrochures = brochures.filter((b) =>
-    b.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredBrochures = Array.isArray(brochures)
+    ? brochures.filter((b) =>
+        b.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
 
   return (
     <div className="min-h-screen relative">
