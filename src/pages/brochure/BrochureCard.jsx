@@ -21,12 +21,10 @@ function BrochureCard({ brochure, onEdit, onDelete }) {
       {/* PDF Preview */}
       {brochure.pdfFileUrl ? (
         <iframe
-          src={`https://docs.google.com/gview?url=${encodeURIComponent(
-            brochure.pdfFileUrl
-          )}&embedded=true`}
-          title={brochure.title}
-          className="w-full h-60 rounded-t-lg"
-        />
+  src={brochure.pdfFileUrl.replace('/upload/', '/upload/q_auto,f_auto/')}
+  title={brochure.title}
+  className="w-full h-60 rounded-t-lg"
+/>
       ) : (
         <div className="w-full h-60 flex items-center justify-center bg-base-200 text-sm text-red-500 rounded-t-lg">
           No PDF Available
@@ -43,7 +41,8 @@ function BrochureCard({ brochure, onEdit, onDelete }) {
         <div className="flex gap-3 mt-4 flex-wrap">
           {brochure.pdfFileUrl && (
             <a
-              href={brochure.pdfFileUrl}
+              href={brochure.pdfFileUrl.replace('/upload/', '/upload/q_auto,f_auto/')
+              }
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-outline btn-sm flex items-center gap-1"
