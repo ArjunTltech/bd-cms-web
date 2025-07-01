@@ -14,6 +14,9 @@ import {
     Info,
     SlidersHorizontal,
     Grid,
+    FilePlus,
+    BadgeInfo,
+    Bot,
     Image,
     Mail,
     MessageSquare,
@@ -31,8 +34,6 @@ import {
     MailIcon,
     BriefcaseBusiness,
     Building,
-    BadgeInfo,
-    Bot,
     GitCommit
 } from "lucide-react";
 import logo from "../assets/images/logo-land.png";
@@ -42,7 +43,7 @@ import 'tippy.js/dist/tippy.css';
 import { useEffect, useState } from "react";
 import axiosInstance from "../config/axios";
 import { useAuth } from "../context/AuthContext";
-import {versionInfo} from '../components/data/version'
+import { versionInfo } from '../components/data/version'
 
 
 function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
@@ -53,7 +54,8 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
         users: 0,
         clients: 0,
         socialMedia: 0,
-        chatBot: 0
+        chatBot: 0,
+        brochures: 0
     });
     const { authState } = useAuth();
 
@@ -68,7 +70,8 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
                     users: data.counts.users.total || 0,
                     clients: data.counts.clients.total || 0,
                     socialMedia: data.counts.social.active || 0,
-                    chatBot: data.counts.chatBot.total || 0
+                    chatBot: data.counts.chatBot.total || 0,
+                    brochures: data.counts.brochures.total || 0
                 });
             } catch (error) {
                 console.error('Error fetching sidebar counts:', error);
@@ -94,7 +97,7 @@ function Sidebar({ isOpen, onClose, isCollapsed, setIsCollapsed }) {
             section: "Content Management",
             items: [
                 { name: 'Pages', path: '/pages', icon: Layout },
-                { name: 'brochures', path: '/brochures', icon: Layout },
+                { name: 'brochures', path: '/brochures', icon: FilePlus, count: count.brochures },
                 { name: 'Clients', path: '/clients', icon: Briefcase, count: count.clients },
                 { name: 'SEO Editor', path: '/seo-editor', icon: Layers },
                 { name: 'Tooltip Management', path: '/tooltips', icon: Info },

@@ -2,13 +2,13 @@ import React from 'react';
 import StatCard from '../../components/ui/StatCard.jsx'
 import { Users, FileText, MessageSquare, Eye, BarChart, Mail, Clipboard } from 'lucide-react'; // Import relevant icons
 import TotalEnquiryStat from '../../components/stats/TotalEnquiryStat.jsx';
-import TotalSubscribers from '../../components/stats/TotalSubscribers.jsx';
-import TotalBlogStats from '../../components/stats/TotalBlogStats.jsx';
 import TotalPageViews from '../../components/stats/TotalPageViews.jsx';
 import TotalActiveUsers from '../../components/stats/TotalActiveusers.jsx';
 import TotalBounceRate from '../../components/stats/TotalbounceRate.jsx';
 import EnquiryChart from '../../components/chart/EnquiryChart.jsx';
 import SessionChart from '../../components/chart/SessionChart.jsx';
+import TotalBrochures from '../../components/stats/TotalBrochureCount.jsx';
+import TotalSliderStats from '../../components/stats/TotalSliderStats.jsx';
 
 function Overview() {
   // Define the CMS-related stats data in an array
@@ -65,9 +65,9 @@ function Overview() {
       <div className="grid grid-cols-1 md:grid-cols-2  xl:grid-cols-3 gap-6">
 
         <TotalPageViews />
-        <TotalBlogStats />
+        <TotalSliderStats />
         <TotalEnquiryStat />
-        <TotalSubscribers />
+        <TotalBrochures />
         <TotalActiveUsers />
         <TotalBounceRate />
       </div>
