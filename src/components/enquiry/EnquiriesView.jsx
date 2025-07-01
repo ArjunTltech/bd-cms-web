@@ -61,10 +61,11 @@ const EnquiryItem = ({ enquiry, onStatusChange, onDelete }) => {
   const handleClick = async () => {
     if (enquiry.status === "unread") {
       try {
-        await axiosInstance.patch(`/enquiries/update-status/${enquiry.id}`, {
+       const response = await axiosInstance.patch(`/enquiry/update-status/${enquiry.id}`, {
           status: "read"
         });
         onStatusChange(enquiry.id, "read");
+        toast.success(response.data.message)
       } catch (error) {
         console.error("Failed to update status", error);
         toast.error("Failed to mark enquiry as read");
