@@ -45,9 +45,9 @@ function ChatbotForm({ onFAQCreated, initialData, mode, setIsDrawerOpen, chats, 
         return null;
 
       case 'answer':
-        return wordCount >= 10 && wordCount <= 45
+        return wordCount >= 5 && wordCount <= 45
           ? null
-          : 'Answer should be between 10 and 45 words.';
+          : 'Answer should be between 5 and 45 words.';
 
       default:
         return null;

@@ -53,7 +53,7 @@ const OrganizationDetails = () => {
 
         const organizationData = response.data.organization[0];
         setOrganizationDetails(organizationData)
-
+      
         reset({
           email: organizationData.email || '',
           companyname: organizationData.companyName || '',
@@ -118,7 +118,7 @@ const OrganizationDetails = () => {
     let response
     try {
 
-      if (!organizationDetails.id) {
+      if (!organizationDetails?.id) {
 
         response = await axiosInstance.post('/organization/add-organization', submitData, {
           headers: {
