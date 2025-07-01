@@ -1,17 +1,17 @@
-import axiosInstance from '../../config/axios';
 import React, { useEffect, useState } from 'react';
 import StatCard from '../ui/StatCard';
-import { Mail } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
+import axiosInstance from '../../config/axios';
 import { SkeletonCard } from '../skeleton/Skeleton';
 
-const TotalSubscribers = () => {
+const TotalSliderStats = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axiosInstance.get("/stats/total-subscribers");
+                const response = await axiosInstance.get("/stats/slider-count");
                 const result = response.data.data;
                 setData(result);
             } catch (error) {
@@ -25,21 +25,22 @@ const TotalSubscribers = () => {
     }, []);
 
     return (
-        <div className="w-full animate-fade-in-down">
+        <div className="w-full  animate-fade-in-down">
             {loading ? (
                 <SkeletonCard />
             ) : (
                 <StatCard
-                    title="Total Subscribers"
+                    title="Total Sliders"
                     value={data}
-                    description="Subscribed"
-                    icon={Mail}
-                    iconColor="text-yellow-500"
-                    tooltip="Number of users who have subscribed to your newsletter or updates."
+                    description="/ 8"
+                    icon={SlidersHorizontal}
+                    iconColor="text-green-500"
+                    tooltip="Indicates the current count of available sliders, with a maximum limit of 8."
+
                 />
             )}
         </div>
     );
 };
 
-export default TotalSubscribers;
+export default TotalSliderStats;
