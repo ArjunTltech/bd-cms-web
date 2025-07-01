@@ -13,31 +13,37 @@ function BrochureCard({ brochure, onEdit, refreshBrochureList }) {
     try {
       await axiosInstance.delete(`/brochure/delete-brochure/${brochure.id}`);
       toast.success("Brochure deleted!");
-      await refreshBrochureList(); // Ensure server-side refresh
+      await refreshBrochureList();
     } catch (err) {
       toast.error("Failed to delete brochure");
       console.error("Delete error:", err);
     } finally {
       setIsDeleting(false);
       setIsModalOpen(false);
+       refreshBrochureList();
     }
   };
 
   return (
     <>
-      <div className="relative rounded-xl overflow-hidden bg-white/10 backdrop-blur-md border border-white/20 shadow-xl text-white hover:scale-105 transition-transform">
-        {brochure.pdfFileUrl ? (
-          <embed
-            src={brochure.pdfFileUrl}
-            type="application/pdf"
-            className="w-full h-72"
-            style={{ backgroundColor: "white" }}
-          />
-        ) : (
-          <div className="w-full h-72 flex items-center justify-center bg-white/10 text-red-500 text-sm">
-            No PDF Available
-          </div>
-        )}
+      <div className="relative rounded-xl overflow-hidden bg-white/10 backdrop-blur-md border border-white/20 shadow-xl text-white hover:scale-[1.02] transition-transform">
+        <div className="w-full h-72 bg-white relative overflow-hidden">
+          {brochure.pdfFileUrl ? (
+            <iframe
+              src={`${brochure.pdfFileUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+              className="w-full h-full"
+              title={brochure.title}
+              style={{
+                border: "none",
+                backgroundColor: "white",
+              }}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-white/10 text-red-500 text-sm">
+              No PDF Available
+            </div>
+          )}
+        </div>
 
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex flex-col justify-between p-4">
           <div>
