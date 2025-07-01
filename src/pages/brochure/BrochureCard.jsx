@@ -4,7 +4,7 @@ import axiosInstance from "../../config/axios";
 import { toast } from "react-toastify";
 import DeleteConfirmModal from "../../components/ui/modal/DeleteConfirmModal";
 
-function BrochureCard({ brochure, onEdit, onDelete, refreshBrochureList }) {
+function BrochureCard({ brochure, onEdit, refreshBrochureList }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -13,15 +13,13 @@ function BrochureCard({ brochure, onEdit, onDelete, refreshBrochureList }) {
     try {
       await axiosInstance.delete(`/brochure/delete-brochure/${brochure.id}`);
       toast.success("Brochure deleted!");
-      onDelete(brochure.id); // optional if you're also refreshing
-      console.log(refreshBrochureList)
+      await refreshBrochureList(); // Ensure server-side refresh
     } catch (err) {
       toast.error("Failed to delete brochure");
       console.error("Delete error:", err);
     } finally {
       setIsDeleting(false);
       setIsModalOpen(false);
-      refreshBrochureList(); // ✅ refresh from server
     }
   };
 
@@ -29,12 +27,11 @@ function BrochureCard({ brochure, onEdit, onDelete, refreshBrochureList }) {
     <>
       <div className="relative rounded-xl overflow-hidden bg-white/10 backdrop-blur-md border border-white/20 shadow-xl text-white hover:scale-105 transition-transform">
         {brochure.pdfFileUrl ? (
-          <iframe
-            src={`https://docs.google.com/gview?url=${encodeURIComponent(
-              brochure.pdfFileUrl
-            )}&embedded=true`}
-            title={brochure.title}
-            className="w-full h-72 pointer-events-none"
+          <embed
+            src={brochure.pdfFileUrl}
+            type="application/pdf"
+            className="w-full h-72"
+            style={{ backgroundColor: "white" }}
           />
         ) : (
           <div className="w-full h-72 flex items-center justify-center bg-white/10 text-red-500 text-sm">
@@ -78,7 +75,7 @@ function BrochureCard({ brochure, onEdit, onDelete, refreshBrochureList }) {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Delete Confirmation Modal */}
       <DeleteConfirmModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
