@@ -20,6 +20,7 @@ function BrochureCard({ brochure, onEdit, refreshBrochureList }) {
     } finally {
       setIsDeleting(false);
       setIsModalOpen(false);
+      refreshBrochureList();
     }
   };
 

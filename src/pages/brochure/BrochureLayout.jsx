@@ -1,8 +1,16 @@
+// BrochureLayout.jsx
 import { useState, useEffect, useCallback } from "react";
 import { Search } from "lucide-react";
 import BrochureForm from "./BrochureForm";
 import BrochureCard from "./BrochureCard";
 import axiosInstance from "../../config/axios";
+
+function optimizeCloudinaryUrl(url) {
+  if (!url) return null;
+  const match = url.match(/\/upload\/(.*)/);
+  if (!match) return url;
+  return `https://res.cloudinary.com/dlwrnjj1v/image/upload/q_auto,f_auto/${match[1]}`;
+}
 
 function BrochureLayout() {
   const [brochures, setBrochures] = useState([]);
@@ -17,7 +25,11 @@ function BrochureLayout() {
     try {
       setLoading(true);
       const response = await axiosInstance.get("/brochure/get-all-brochure");
-      setBrochures(response.data?.brochures || []);
+      const optimized = (response.data?.brochures || []).map((item) => ({
+        ...item,
+        pdfFileUrl: optimizeCloudinaryUrl(item.pdfFileUrl),
+      }));
+      setBrochures(optimized);
     } catch (err) {
       setError("Failed to load brochures");
       console.error("Error fetching brochures:", err);
@@ -116,7 +128,6 @@ function BrochureLayout() {
           )}
         </div>
 
-        {/* Drawer Form */}
         <div className="drawer-side">
           <label htmlFor="brochure-drawer" className="drawer-overlay"></label>
           <div className="p-4 md:w-[40%] w-full sm:w-1/2 bg-base-100 h-[85vh] rounded-lg overflow-y-scroll absolute bottom-4 right-4 shadow-lg">
