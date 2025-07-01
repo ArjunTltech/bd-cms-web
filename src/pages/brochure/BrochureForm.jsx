@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import axiosInstance from "../../config/axios";
 
-function BrochureForm({ mode, initialData, onSaved, setIsDrawerOpen }) {
+function BrochureForm({ mode, initialData, onSaved, onClose }) {
   const [title, setTitle] = useState("");
   const [file, setFile] = useState(null);
   const [existingPdfRemoved, setExistingPdfRemoved] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Reset fields when mode or data changes
   useEffect(() => {
     if (mode === "edit" && initialData) {
       setTitle(initialData.title || "");
@@ -16,6 +17,7 @@ function BrochureForm({ mode, initialData, onSaved, setIsDrawerOpen }) {
     } else {
       setTitle("");
       setFile(null);
+      setExistingPdfRemoved(false);
     }
   }, [initialData, mode]);
 
@@ -42,24 +44,19 @@ function BrochureForm({ mode, initialData, onSaved, setIsDrawerOpen }) {
 
     const formData = new FormData();
     formData.append("title", title.trim());
-
-    if (file) {
-      formData.append("file", file);
-    }
-
+    if (file) formData.append("file", file);
     if (mode === "edit" && initialData?.id) {
       formData.append("id", initialData.id);
     }
 
     setLoading(true);
-
     try {
       await axiosInstance.post("/brochure/add-brochure", formData);
       toast.success(`Brochure ${mode === "edit" ? "updated" : "added"}!`);
-      onSaved();
-      setIsDrawerOpen(false);
+      onSaved();     // Refresh list
+      onClose();     // Close drawer
     } catch (err) {
-      console.error("Brochure save error:", err);
+      console.error("Save error:", err);
       toast.error("Failed to save brochure.");
     } finally {
       setLoading(false);
@@ -68,7 +65,6 @@ function BrochureForm({ mode, initialData, onSaved, setIsDrawerOpen }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Title Input */}
       <div>
         <label className="label font-medium">Title</label>
         <input
@@ -77,11 +73,9 @@ function BrochureForm({ mode, initialData, onSaved, setIsDrawerOpen }) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Enter brochure title"
-          
         />
       </div>
 
-      {/* PDF Upload */}
       <div>
         <label className="label font-medium">PDF File (optional)</label>
         <input
@@ -90,10 +84,6 @@ function BrochureForm({ mode, initialData, onSaved, setIsDrawerOpen }) {
           className="file-input file-input-bordered w-full"
           onChange={(e) => setFile(e.target.files[0])}
         />
-        <small className="text-sm text-gray-500">
-          You can upload or change the PDF later.
-        </small>
-
         {file && (
           <button
             type="button"
@@ -105,7 +95,6 @@ function BrochureForm({ mode, initialData, onSaved, setIsDrawerOpen }) {
         )}
       </div>
 
-      {/* Existing PDF (edit mode only) */}
       {mode === "edit" && initialData?.pdfFileUrl && !existingPdfRemoved && (
         <div>
           <label className="label font-medium">Existing PDF</label>
@@ -129,7 +118,6 @@ function BrochureForm({ mode, initialData, onSaved, setIsDrawerOpen }) {
         </div>
       )}
 
-      {/* Submit Button */}
       <button
         type="submit"
         className={`btn btn-primary w-full ${loading ? "loading" : ""}`}
