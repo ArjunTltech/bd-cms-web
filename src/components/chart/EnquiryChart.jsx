@@ -12,9 +12,8 @@ function EnquiryChart() {
     useEffect(() => {
         const fetchChartData = async () => {
             try {
-                const response = await axiosInstance.get("/stats/enquiries/last-7-days");
+                const response = await axiosInstance.get("/stats/enquiry-stats");
                 let data = response.data;
-
                 if (data[data.length - 1][0] === "Date" && data[data.length - 1][1] === "Enquiries") {
                     data = [data.pop(), ...data];
                 }
