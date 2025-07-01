@@ -17,8 +17,7 @@ function BrochureLayout() {
     try {
       setLoading(true);
       const response = await axiosInstance.get("/brochure/get-all-brochure");
-      console.log("Brochure API response:", response.data);
-      setBrochures(response.data?.brochures || []); // ✅ Corrected line
+      setBrochures(response.data?.brochures || []);
     } catch (err) {
       setError("Failed to load brochures");
       console.error("Error fetching brochures:", err);
@@ -30,10 +29,6 @@ function BrochureLayout() {
   useEffect(() => {
     refreshBrochureList();
   }, [refreshBrochureList]);
-
-  const handleDeleteBrochure = (id) => {
-    setBrochures((prev) => prev.filter((b) => b.id !== id));
-  };
 
   const handleEditBrochure = (brochure) => {
     setEditBrochure(brochure);
@@ -47,12 +42,16 @@ function BrochureLayout() {
     setIsDrawerOpen(true);
   };
 
-  const filteredBrochures = Array.isArray(brochures)
-    ? brochures.filter((b) =>
-        b.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        b.description?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : [];
+  const closeDrawer = () => {
+    setIsDrawerOpen(false);
+    setEditBrochure(null);
+    setMode("add");
+  };
+
+  const filteredBrochures = brochures.filter((b) =>
+    b.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    b.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen relative">
@@ -110,7 +109,7 @@ function BrochureLayout() {
                   key={brochure.id}
                   brochure={brochure}
                   onEdit={() => handleEditBrochure(brochure)}
-                  onDelete={handleDeleteBrochure}
+                  refreshBrochureList={refreshBrochureList}
                 />
               ))}
             </div>
@@ -128,7 +127,7 @@ function BrochureLayout() {
               mode={mode}
               initialData={editBrochure}
               onSaved={refreshBrochureList}
-              setIsDrawerOpen={setIsDrawerOpen}
+              onClose={closeDrawer}
             />
           </div>
         </div>

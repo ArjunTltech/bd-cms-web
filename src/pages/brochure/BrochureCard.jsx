@@ -1,68 +1,93 @@
+import { useState } from "react";
 import { Download, Edit, Trash2 } from "lucide-react";
 import axiosInstance from "../../config/axios";
-import { toast } from "react-hot-toast";
+import { toast } from "react-toastify";
+import DeleteConfirmModal from "../../components/ui/modal/DeleteConfirmModal";
 
-function BrochureCard({ brochure, onEdit, onDelete }) {
+function BrochureCard({ brochure, onEdit, onDelete, refreshBrochureList }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this brochure?")) return;
-
+    setIsDeleting(true);
     try {
       await axiosInstance.delete(`/brochure/delete-brochure/${brochure.id}`);
       toast.success("Brochure deleted!");
-      onDelete(brochure.id);
+      onDelete(brochure.id); // optional if you're also refreshing
+      console.log(refreshBrochureList)
     } catch (err) {
       toast.error("Failed to delete brochure");
       console.error("Delete error:", err);
+    } finally {
+      setIsDeleting(false);
+      setIsModalOpen(false);
+      refreshBrochureList(); // ✅ refresh from server
     }
   };
 
   return (
-    <div className="card bg-base-100 shadow-xl transition-transform hover:scale-105">
-      {/* PDF Preview */}
-      {brochure.pdfFileUrl ? (
-        <iframe
-  src={brochure.pdfFileUrl.replace('/upload/', '/upload/q_auto,f_auto/')}
-  title={brochure.title}
-  className="w-full h-60 rounded-t-lg"
-/>
-      ) : (
-        <div className="w-full h-60 flex items-center justify-center bg-base-200 text-sm text-red-500 rounded-t-lg">
-          No PDF Available
-        </div>
-      )}
-
-      <div className="card-body space-y-2">
-        <h2 className="card-title">{brochure.title}</h2>
-
-        {brochure.description && (
-          <p className="text-sm text-gray-400">{brochure.description}</p>
+    <>
+      <div className="relative rounded-xl overflow-hidden bg-white/10 backdrop-blur-md border border-white/20 shadow-xl text-white hover:scale-105 transition-transform">
+        {brochure.pdfFileUrl ? (
+          <iframe
+            src={`https://docs.google.com/gview?url=${encodeURIComponent(
+              brochure.pdfFileUrl
+            )}&embedded=true`}
+            title={brochure.title}
+            className="w-full h-72 pointer-events-none"
+          />
+        ) : (
+          <div className="w-full h-72 flex items-center justify-center bg-white/10 text-red-500 text-sm">
+            No PDF Available
+          </div>
         )}
 
-        <div className="flex gap-3 mt-4 flex-wrap">
-          {brochure.pdfFileUrl && (
-            <a
-              href={brochure.pdfFileUrl.replace('/upload/', '/upload/q_auto,f_auto/')
-              }
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-outline btn-sm flex items-center gap-1"
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex flex-col justify-between p-4">
+          <div>
+            <h2 className="text-lg font-semibold">{brochure.title}</h2>
+            {brochure.description && (
+              <p className="text-sm text-white/80">{brochure.description}</p>
+            )}
+          </div>
+
+          <div className="flex gap-3 mt-4 flex-wrap">
+            {brochure.pdfFileUrl && (
+              <a
+                href={brochure.pdfFileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-sm bg-white/10 hover:bg-white/20 text-white border border-white/30"
+              >
+                <Download className="w-4 h-4" />
+                View
+              </a>
+            )}
+            <button
+              onClick={onEdit}
+              className="btn btn-sm bg-white/10 hover:bg-white/20 text-white border border-white/30"
             >
-              <Download className="w-4 h-4" />
-              View
-            </a>
-          )}
-          <button onClick={onEdit} className="btn btn-outline btn-sm">
-            <Edit className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handleDelete}
-            className="btn btn-outline btn-sm btn-error"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+              <Edit className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="btn btn-sm bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-400/40"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Modal */}
+      <DeleteConfirmModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Confirm Deletion"
+        message={`Are you sure you want to delete "${brochure.title}"?`}
+        isLoading={isDeleting}
+      />
+    </>
   );
 }
 
